@@ -137,31 +137,31 @@ class RecipeTreeNode
         else
             parentLink.hide()
 
-        this.children =  this.itm.getRequirements().size()
+        if y < 2
+            this.children =  this.itm.getRequirements().size()
+            int i = 0
+            for ItemInShop child in this.itm.getRequirements()
+                let childNode = new RecipeTreeNode(this.tree, getChildXNew(this.x, i, this.children, this.width), this.y + 1, child, this)
+                this.childrenList.add(childNode)
+                i++
 
-
-
-        int i = 0
-        for ItemInShop child in this.itm.getRequirements()
-            let childNode = new RecipeTreeNode(this.tree, getChildXNew(this.x, i, this.children, this.width), this.y + 1, child, this)
-            this.childrenList.add(childNode)
-            i++
-
-        this.childLink = this.shopUI.getBranch(index * 3 + 1)
-        if this.children >= 1
-            this.shopUI.modifyBranch(childLink, convertX(this.x)-BRANCH_WIDTH/2, convertY(this.y)-0.042, convertX(this.x) + BRANCH_WIDTH/2, convertY(this.y)-0.05)              
-            childLink.show()
-        else
-            childLink.hide()
+            this.childLink = this.shopUI.getBranch(index * 3 + 1)
+            if this.children >= 1
+                this.shopUI.modifyBranch(childLink, convertX(this.x)-BRANCH_WIDTH/2, convertY(this.y)-0.042, convertX(this.x) + BRANCH_WIDTH/2, convertY(this.y)-0.05)              
+                childLink.show()
+            else
+                childLink.hide()
             
-        this.childBar = this.shopUI.getBranch(index * 3 + 2)
-        if this.children >= 2    
-            let xFrom = convertX(getChildXNew(this.x, 0, this.children, this.width))
-            let xTo = convertX(getChildXNew(this.x, this.children - 1, this.children, this.width))
-            this.shopUI.modifyBranch(childBar, xFrom, convertY(this.y)-0.0525 +BRANCH_WIDTH/2, xTo, convertY(this.y)-0.0525 - BRANCH_WIDTH/2) 
-            childBar.show()
+            this.childBar = this.shopUI.getBranch(index * 3 + 2)
+            if this.children >= 2    
+                let xFrom = convertX(getChildXNew(this.x, 0, this.children, this.width))
+                let xTo = convertX(getChildXNew(this.x, this.children - 1, this.children, this.width))
+                this.shopUI.modifyBranch(childBar, xFrom, convertY(this.y)-0.0525 +BRANCH_WIDTH/2, xTo, convertY(this.y)-0.0525 - BRANCH_WIDTH/2) 
+                childBar.show()
+            else
+                childBar.hide()
         else
-            childBar.hide()
+            this.children = 0
 
 
     function displayCheckedCost()
@@ -584,7 +584,7 @@ public class ShopUI
         if this.recipeTree != null
             destroy this.recipeTree
         this.recipeTree = new RecipeTree(this, this.selectedRecipe)
-        this.itemsInRecipe = this.selectedRecipe.getRecipeSize()
+        this.itemsInRecipe = this.selectedRecipe.getVisibleRecipeSize()
 
         for i = itemsInRecipe to prevSize - 1
             this.getRecipeTreeButton(i).frame().hide()

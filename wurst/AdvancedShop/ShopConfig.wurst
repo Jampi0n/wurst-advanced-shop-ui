@@ -18,9 +18,9 @@ public string array CATEGORY_NAMES
 
 @configurable public function configShopCategories()
     CATEGORY_NAMES[0] = "Recommended"
-    CATEGORY_NAMES[1] = "Category 1"
-    CATEGORY_NAMES[2] = "Category 2"
-    CATEGORY_NAMES[3] = "Category 3"
-    CATEGORY_NAMES[4] = "Category 4"
+    CATEGORY_NAMES[1] = "Strength"
+    CATEGORY_NAMES[2] = "Intelligence"
+    CATEGORY_NAMES[3] = "Agility"
+    CATEGORY_NAMES[4] = "Neutral"
 
 

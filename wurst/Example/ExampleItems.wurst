@@ -89,6 +89,12 @@ public constant ITEM_ID_AGI6_EXISTING = ItemIds.bootsofQuelThalas6
 public constant ITEM_ID_ALL2_EXISTING = ItemIds.circletofNobility
 public constant ITEM_ID_ALL5_EXISTING = ItemIds.crownofKings5
 
+public constant ITEM_ID_CLAW3 = ItemIds.clawsofAttack3
+public constant ITEM_ID_CLAW6 = ItemIds.clawsofAttack6
+public constant ITEM_ID_CLAW9 = ItemIds.clawsofAttack9
+public constant ITEM_ID_CLAW12 = ItemIds.clawsofAttack12
+public constant ITEM_ID_CLAW15 = ItemIds.clawsofAttack15
+
 function initItemsExisting()
     let basicCost = 150
     let advancedCost = 500
@@ -112,6 +118,15 @@ function initItemsExisting()
     addRequirement(ITEM_ID_INT3_EXISTING)
     addRequirement(ITEM_ID_AGI3_EXISTING)
     addRequirement(ITEM_ID_ALL2_EXISTING)
+    setupItem(ITEM_ID_CLAW3, 4, 50)
+    setupItem(ITEM_ID_CLAW6, 4, 125)
+    addRequirement(ITEM_ID_CLAW3)
+    setupItem(ITEM_ID_CLAW9, 4, 300)
+    addRequirement(ITEM_ID_CLAW6)
+    setupItem(ITEM_ID_CLAW12, 4, 500)
+    addRequirement(ITEM_ID_CLAW9)
+    setupItem(ITEM_ID_CLAW15, 4, 800)
+    addRequirement(ITEM_ID_CLAW12)
     
 
 init
