@@ -3,22 +3,21 @@ package ShopFunctionConfig
 import ItemInShop
 import ShopAPI
 
-/**
+public abstract class ShopFunctionConfig
+    @configurable static function shopClickBuy(unit u, ItemInShop itm)
+        if shopCanBuy(u, itm)
+            let boughtItem = tryBuy(u, itm)
+            if boughtItem == null
+                print("Item could not be bought!")
+            else
+                print(boughtItem.getName() + " was bought!")
 
-**/
-@configurable public function shopClickBuy(unit u, ItemInShop itm)
-    if shopCanBuy(u, itm)
-        let boughtItem = tryBuy(u, itm)
-        if boughtItem == null
-            print("Item is too expensive!")
-        else
-            print(boughtItem.getName() + " was bought!")
-/**
+    @configurable static function shopCanBuy(unit u, ItemInShop itm) returns bool
+        let cost = getItemCostForHero(u, itm)
+        if u.getOwner().getGold() >= cost
+            if u.isAlive() and (hasSpaceForItem(u, itm) or itm.isPowerUp())
+                return true
+        return false
 
-**/
-@configurable public function shopCanBuy(unit u, ItemInShop itm) returns bool
-    let cost = getItemCostForHero(u, itm)
-    if u.getOwner().getGold() >= cost
-        if u.isAlive() and (hasSpaceForItem(u, itm) or itm.isPowerUp())
-            return true
-    return false
+    @configurable static function onOpenShop(player _p)
+    @configurable static function onCloseShop(player _p)

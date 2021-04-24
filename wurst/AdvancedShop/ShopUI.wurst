@@ -5,7 +5,6 @@ import HashMap
 import Icons
 import LinkedList
 import TimerUtils
-import RecipeTreeConfiguration
 import ClosureTimers
 import FrameWrapperDefinitions
 import RecommendedItems
@@ -21,6 +20,13 @@ import Execute
 constant SOUND_CLICK = new SoundDefinition(Sounds.mouseClick1, false, false)
 
 constant MAX_RECIPE_TREE_LINKS = MAX_RECIPE_TREE_ICONS * 3
+
+public function getChildXNew(real x, int childIndex, int numberOfChildren, real width) returns real
+    if numberOfChildren == 1
+        return x
+    else
+        let widthPerChild = width/numberOfChildren
+        return (x - width/2) + widthPerChild/2 + childIndex/(numberOfChildren) * width
 
 class RecipeTree
 
@@ -428,7 +434,7 @@ public class ShopUI
         buyButton.frame()..setPoint(FRAMEPOINT_TOPRIGHT, this.frameItemDesc, FRAMEPOINT_TOPRIGHT, -0.01, -0.015)
         ..onClick() () ->
             this.buyButton.frame()..setEnabled(false)..setEnabled(true)
-            shopClickBuy(this.inventoryUnit, this.selectedItem)
+            ShopFunctionConfig.shopClickBuy(this.inventoryUnit, this.selectedItem)
         this.itemDescription = createFrame("TW_Shop_Text", this.frameItemDesc, 0, PermanentIndex.getNewIndex())
         ..setSize(itemDescWidth - 0.03, itemDescHeight - 0.02)
         ..setPoint(FRAMEPOINT_TOPLEFT, this.itemIcon.frame(), FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
@@ -522,6 +528,8 @@ public class ShopUI
             SelectUnit(this.inventoryUnit, true)
             ClearTextMessages()
 
+        ShopFunctionConfig.onOpenShop(this.forPlayer)
+
 
     function closeShop()
         if not this.enabled
@@ -534,6 +542,8 @@ public class ShopUI
             this.frameShopUI.hide()
             EnableDragSelect(true, true)
             EnableSelect(true, true)
+
+        ShopFunctionConfig.onCloseShop(this.forPlayer)
 
 
     @inline
@@ -672,7 +682,7 @@ public class ShopUI
         if this.inventoryUnit == null
             canBuyNew = false
         else
-            canBuyNew = shopCanBuy(this.inventoryUnit, this.selectedItem)
+            canBuyNew = ShopFunctionConfig.shopCanBuy(this.inventoryUnit, this.selectedItem)
 
         canBuyNew = canBuyNew and this.currentCost <= this.forPlayer.getGold()
 
