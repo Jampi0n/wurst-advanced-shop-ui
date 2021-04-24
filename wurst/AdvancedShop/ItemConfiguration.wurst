@@ -1,0 +1,30 @@
+package ItemConfiguration
+
+import ItemObjEditing
+import public ClosureTimers
+import public AbilityObjEditing
+import public ObjectIds
+import public ItemInShop
+import public LinkedList
+
+
+int currentItemId
+public ItemDefinition currentItemDefinition
+public ItemInShop currentItemInShop
+
+
+public function setupItem(int itemId, int category, int goldCost)
+    if compiletime
+        let iDef = getItemDefintion(itemId)
+        iDef.setGoldCost(goldCost)
+        currentItemDefinition = iDef
+    else
+        currentItemId = itemId
+        currentItemInShop = ItemInShop.retrieveItemFromId(itemId)
+        currentItemInShop.setupItem(category, goldCost)
+
+public function addRequirement(int itemId)
+    if not compiletime
+        let child = ItemInShop.retrieveItemFromId(itemId)
+        currentItemInShop.addRequirement(child)
+

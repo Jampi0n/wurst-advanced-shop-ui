@@ -1,0 +1,119 @@
+package ExampleItems
+
+import Icons
+import ObjectIdGenerator
+import ItemConfiguration
+import ItemConfigurationCompiletime
+import ItemIds
+
+// wurst generation
+public constant ITEM_ID_STR3 = compiletime(newItem(Icons.bTNGauntletsOfOgrePower))
+public constant ITEM_ID_STR6 = compiletime(newItem(Icons.bTNBelt))
+public constant ITEM_ID_INT3  = compiletime(newItem(Icons.bTNMantleOfIntelligence))
+public constant ITEM_ID_INT6 = compiletime(newItem(Icons.bTNRobeOfTheMagi))
+public constant ITEM_ID_AGI3 = compiletime(newItem(Icons.bTNSlippersOfAgility))
+public constant ITEM_ID_AGI6 = compiletime(newItem(Icons.bTNBoots))
+public constant ITEM_ID_ALL2 = compiletime(newItem(Icons.bTNCirclet))
+public constant ITEM_ID_ALL5 = compiletime(newItem(Icons.bTNHelmutPurple))
+constant ABIL_STR3 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_STR6 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_INT3 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_INT6 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_AGI3 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_AGI6 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_ALL2 = compiletime(ABIL_ID_GEN.next())
+constant ABIL_ALL5 = compiletime(ABIL_ID_GEN.next())
+
+@compiletime
+function initItems()
+    let basicCost = 150
+    let advancedCost = 400
+    let basicAllCost = 350
+    let advancedAllCost = 2000
+    let basic = 5
+    let advanced = 15
+    let basicAll = 4
+    let advancedAll = 25
+    if compiletime
+        new AbilityDefinitionStrengthBonusPlus3(ABIL_STR3)..setStrengthBonus(1, basic)
+        new AbilityDefinitionIntelligenceBonusPlus3(ABIL_INT3)..setIntelligenceBonus(1, basic)
+        new AbilityDefinitionAgilityBonusPlus3(ABIL_AGI3)..setAgilityBonus(1, basic)
+        new AbilityDefinitionStrengthBonusPlus3(ABIL_STR6)..setStrengthBonus(1, advanced)
+        new AbilityDefinitionIntelligenceBonusPlus3(ABIL_INT6)..setIntelligenceBonus(1, advanced)
+        new AbilityDefinitionAgilityBonusPlus3(ABIL_AGI6)..setAgilityBonus(1, advanced)
+        new AbilityDefinitionCrownofKingsAllPlus5(ABIL_ALL2)..setStrengthBonus(1, basicAll)..setAgilityBonus(1, basicAll)..setIntelligenceBonus(1, basicAll)
+        new AbilityDefinitionCrownofKingsAllPlus5(ABIL_ALL5)..setStrengthBonus(1, advancedAll)..setAgilityBonus(1, advancedAll)..setIntelligenceBonus(1, advancedAll)
+
+    setupItem(ITEM_ID_STR3, 1, basicCost)
+    setInfo("Gauntlets of Ogre Strength", "+ {0} strength".format(basic.toString()))
+    setPassiveAbility(ABIL_STR3)
+    setupItem(ITEM_ID_STR6, 1, advancedCost)
+    setInfo("Belt of Giant Strength", "+ {0} strength".format(advanced.toString()))
+    setPassiveAbility(ABIL_STR6)
+    addRequirement(ITEM_ID_STR3)
+    addRequirement(ITEM_ID_STR3)
+    setupItem(ITEM_ID_INT3, 2, basicCost)
+    setInfo("Mantle of Intelligence", "+ {0} intelligence".format(basic.toString()))
+    setPassiveAbility(ABIL_INT3)
+    setupItem(ITEM_ID_INT6, 2, advancedCost)
+    setInfo("Robe of the Magi", "+ {0} intelligence".format(advanced.toString()))
+    setPassiveAbility(ABIL_INT6)
+    addRequirement(ITEM_ID_INT3)
+    addRequirement(ITEM_ID_INT3)
+    setupItem(ITEM_ID_AGI3, 3, basicCost)
+    setInfo("Slippers of Agility", "+ {0} agility".format(basic.toString()))
+    setPassiveAbility(ABIL_AGI3)
+    setupItem(ITEM_ID_AGI6, 3, advancedCost)
+    setInfo("Boots of Quel'thalas", "+ {0} agility".format(advanced.toString()))
+    setPassiveAbility(ABIL_AGI6)
+    addRequirement(ITEM_ID_AGI3)
+    addRequirement(ITEM_ID_AGI3)
+    setupItem(ITEM_ID_ALL2, 4, basicAllCost)
+    setInfo("Circlet of Nobility", "+ {0} all stats".format(basicAll.toString()))
+    setPassiveAbility(ABIL_ALL2)
+    setupItem(ITEM_ID_ALL5, 4, advancedAllCost)
+    setInfo("Crown of Kings", "+ {0} all stats".format(advancedAll.toString()))
+    setPassiveAbility(ABIL_ALL5)
+    addRequirement(ITEM_ID_STR6)
+    addRequirement(ITEM_ID_INT6)
+    addRequirement(ITEM_ID_AGI6)
+    addRequirement(ITEM_ID_ALL2)
+
+// existing world editor items
+public constant ITEM_ID_STR3_EXISTING = ItemIds.gauntletsofOgreStrength3
+public constant ITEM_ID_STR6_EXISTING = ItemIds.beltofGiantStrength6
+public constant ITEM_ID_INT3_EXISTING  = ItemIds.mantleofIntelligence3
+public constant ITEM_ID_INT6_EXISTING = ItemIds.robeoftheMagi6
+public constant ITEM_ID_AGI3_EXISTING = ItemIds.slippersofAgility3
+public constant ITEM_ID_AGI6_EXISTING = ItemIds.bootsofQuelThalas6
+public constant ITEM_ID_ALL2_EXISTING = ItemIds.circletofNobility
+public constant ITEM_ID_ALL5_EXISTING = ItemIds.crownofKings5
+
+function initItemsExisting()
+    let basicCost = 150
+    let advancedCost = 500
+    let basicAllCost = 175
+    let advancedAllCost = 1000
+    setupItem(ITEM_ID_STR3_EXISTING, 1, basicCost)
+    setupItem(ITEM_ID_STR6_EXISTING, 1, advancedCost)
+    addRequirement(ITEM_ID_STR3_EXISTING)
+    addRequirement(ITEM_ID_STR3_EXISTING)
+    setupItem(ITEM_ID_INT3_EXISTING, 2, basicCost)
+    setupItem(ITEM_ID_INT6_EXISTING, 2, advancedCost)
+    addRequirement(ITEM_ID_INT3_EXISTING)
+    addRequirement(ITEM_ID_INT3_EXISTING)
+    setupItem(ITEM_ID_AGI3_EXISTING, 3, basicCost)
+    setupItem(ITEM_ID_AGI6_EXISTING, 3, advancedCost)
+    addRequirement(ITEM_ID_AGI3_EXISTING)
+    addRequirement(ITEM_ID_AGI3_EXISTING)
+    setupItem(ITEM_ID_ALL2_EXISTING, 4, basicAllCost)
+    setupItem(ITEM_ID_ALL5_EXISTING, 4, advancedAllCost)
+    addRequirement(ITEM_ID_STR3_EXISTING)
+    addRequirement(ITEM_ID_INT3_EXISTING)
+    addRequirement(ITEM_ID_AGI3_EXISTING)
+    addRequirement(ITEM_ID_ALL2_EXISTING)
+    
+
+init
+    initItems()
+    initItemsExisting()

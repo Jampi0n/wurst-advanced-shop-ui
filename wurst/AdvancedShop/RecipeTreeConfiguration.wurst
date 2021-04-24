@@ -1,0 +1,166 @@
+package RecipeTreeConfiguration
+
+import ErrorHandling
+
+public function getChildXNew(real x, int childIndex, int numberOfChildren, real width) returns real
+    if numberOfChildren == 1
+        return x
+    else
+        let widthPerChild = width/numberOfChildren
+        return (x - width/2) + widthPerChild/2 + childIndex/(numberOfChildren) * width
+
+/*
+    Configure positions of recipe tree.
+*/
+
+/*
+max vales are: 35,2,3,4
+
+
+15,0,0,1 = 15
+
+15,0,0,2 = 7
+15,0,1,2 = 23
+
+15,0,0,3 = 3
+15,0,1,3 = 15
+15,0,2,3 = 27
+
+15,0,0,4 =3
+15,0,1,4 =11
+15,0,2,4 =19
+15,0,3,4 =27
+
+3,1,0,1 = 3
+
+3,1,0,2 = 0
+3,1,1,2 = 6
+
+7,1,0,1 = 7
+
+7,1,0,2 = 3
+7,1,1,2 = 11
+
+7,1,0,3 = 0
+7,1,1,3 = 6
+7,1,2,3 = 12
+
+15,1,0,1 = 15
+
+15,1,0,2 = 12
+15,1,1,2 = 18
+
+23,1,0,1 = 23
+
+23,1,0,2 = 19
+23,1,1,2 = 27
+
+23,1,0,3 = 18
+23,1,1,3 = 24
+23,1,2,3 = 30
+
+27,1,0,1 = 27
+
+27,1,0,2 = 24
+27,1,1,2 = 30
+*/
+
+/*
+    x: x of the parent (in grid cells)
+    y: y of the parent (in recipe tiers)
+    childIndex: specify the child of which the x is to be returned
+    numberOfChildren: the number of children this parent has
+*/
+/*
+public int array recipeTreePositions
+
+constant MAX_X = 35
+constant MAX_Y = 1
+constant MAX_CHILDREN = 7
+constant MAX_WIDTH = 35
+
+
+function index(int x, int y, int childIndex, int numberOfChildren) returns int
+    return x * (1 + MAX_Y) * (MAX_CHILDREN + 1) * (MAX_CHILDREN + 1) + y * (MAX_CHILDREN + 1) * (MAX_CHILDREN + 1) + childIndex + (MAX_CHILDREN + 1) + numberOfChildren
+
+constant MAX_INDEX = index(MAX_X, MAX_Y, MAX_CHILDREN, MAX_CHILDREN)
+
+function getChildXError(int x, int y, int childIndex, int numberOfChildren, string message)
+    error("getChildX("+x.toString()+", "+y.toString()+", "+childIndex.toString()+", "+numberOfChildren.toString()+") "+message)
+
+function saveChildX(int x, int y, int childIndex, int numberOfChildren, int childX)
+    let index = 24 * x + 12 * y + 4 * childIndex + numberOfChildren
+    if index > MAX_INDEX or index < 0
+        getChildXError(x, y, childIndex, numberOfChildren, "array index out of bounds when saving: "+index.toString())
+        return
+
+    recipeTreePositions[index] = childX
+
+public function getChildX(int x, int y, int childIndex, int numberOfChildren) returns int
+    let index = 24 * x + 12 * y + 4 * childIndex + numberOfChildren
+    if index > MAX_INDEX or index < 0
+        getChildXError(x, y, childIndex, numberOfChildren, "array index out of bounds: "+index.toString())
+        return -1
+    let result = recipeTreePositions[index]
+
+    if result == -1
+        getChildXError(x, y, childIndex, numberOfChildren, "valu is -1 at index: "+index.toString())
+        return -1
+
+    return result
+
+function setupArray()
+    for i = 0 to MAX_X
+        saveChildX(i, 0, 0, 1, i)
+        saveChildX(i, 1, 0, 1, i)
+    
+
+    saveChildX(15, 0, 0, 2, 7)
+    saveChildX(15, 0, 1, 2, 23)
+
+    saveChildX(15, 0, 0, 3, 3)
+    saveChildX(15, 0, 1, 3, 15)
+    saveChildX(15, 0, 2, 3, 27)
+
+    saveChildX(15, 0, 0, 4, 3)
+    saveChildX(15, 0, 1, 4, 11)
+    saveChildX(15, 0, 2, 4, 19)
+    saveChildX(15, 0, 3, 4, 27)
+
+
+    saveChildX(3, 1, 0, 2, 0)
+    saveChildX(3, 1, 1, 2, 6)
+
+    saveChildX(7, 1, 0, 2, 3)
+    saveChildX(7, 1, 1, 2, 11)
+
+    saveChildX(7, 1, 0, 3, 0)
+    saveChildX(7, 1, 1, 3, 6)
+    saveChildX(7, 1, 2, 3, 12)
+
+    saveChildX(15, 1, 0, 2, 12)
+    saveChildX(15, 1, 1, 2, 18)
+
+    saveChildX(23, 1, 0, 2, 19)
+    saveChildX(23, 1, 1, 2, 27)
+
+    saveChildX(23, 1, 0, 3, 18)
+    saveChildX(23, 1, 1, 3, 24)
+    saveChildX(23, 1, 2, 3, 30)
+
+
+    saveChildX(27, 1, 0, 2, 24)
+    saveChildX(27, 1, 1, 2, 30)
+
+    //special case 3->1,3,1
+    saveChildX(15, 1, 0, 3, 9)
+    saveChildX(15, 1, 1, 3, 15)
+    saveChildX(15, 1, 2, 3, 21)
+
+
+init
+    for i = 0 to MAX_INDEX
+        recipeTreePositions[i] = -1
+    setupArray()
+
+*/

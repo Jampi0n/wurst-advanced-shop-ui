@@ -1,0 +1,59 @@
+package ItemConfigurationCompiletime
+
+import ItemConfiguration
+
+string currentDescription = ""
+
+public function setInfo(string name, string desc)
+    if compiletime
+        currentItemDefinition.setName(name)
+        currentItemDefinition.setTooltipBasic(name)
+        currentItemDefinition.setDescription(desc)
+        currentItemDefinition.setTooltipExtended(desc)
+
+public function setInfo(string name)
+    setInfo(name, currentDescription)
+    currentDescription = ""
+public function addLine(string text)
+    currentDescription += text + "|n"
+public function addText(string text)
+    currentDescription += text
+public function addPassive(string name, string desc)
+    currentDescription += COLOR_GOLD.toColorString() + name + ":|r|n" + desc + "|n"
+public function addUnique(string desc)
+    currentDescription += COLOR_GOLD.toColorString() + "Unique:|r|n" + desc + "|n"
+public function addActive(string name, string desc)
+    currentDescription += COLOR_GOLD.toColorString() + name + " (Active):|r|n" + desc + "|n"
+
+public function setPassiveAbility(int id)
+    if compiletime
+        currentItemDefinition.setAbilities(id.toRawCode())
+        currentItemDefinition.setActivelyUsed(false)
+        setCooldownGroup(id)
+
+public function setAbilities(vararg int ids)
+    if compiletime
+        let list = new LinkedList<int>
+        for id in ids
+            list.add(id)
+        let result = list.joinBy((int i) -> i.toRawCode(), ",")
+        currentItemDefinition.setAbilities(result)
+        setCooldownGroup(result.substring(0, 4))
+        currentItemDefinition.setActivelyUsed(true)
+        destroy list
+
+public function setCooldownGroup(int id)
+    if compiletime
+        currentItemDefinition.setCooldownGroup(id.toRawCode())
+
+public function setCooldownGroup(string str)
+    if compiletime
+        currentItemDefinition.setCooldownGroup(str)
+
+public function consumable(int charges)
+    if compiletime
+        currentItemDefinition.setPerishable(true)
+        currentItemDefinition.setNumberofCharges(charges)
+
+public function consumable()
+    consumable(1)

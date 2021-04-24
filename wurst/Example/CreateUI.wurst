@@ -1,0 +1,50 @@
+package CreateUI
+
+import ItemFinalize
+import ShopUI
+import ClosureTimers
+import UnitIds
+import RecommendedItems
+
+unit array playerHeroes
+ShopUI array playerShopUI
+
+function getHeroId(int _playerId) returns int
+    let heroIds = [UnitIds.archmage, UnitIds.paladin, UnitIds.mountainking, UnitIds.bloodmage]
+    return heroIds[GetRandomInt(0, 3)]
+
+init
+    let amItems = new RecommendedItems(UnitIds.archmage)
+    let palItems = new RecommendedItems(UnitIds.paladin)
+    let mkItems = new RecommendedItems(UnitIds.mountainking)
+    let blmItems = new RecommendedItems(UnitIds.bloodmage)
+    amItems.addItems(ITEM_ID_INT6, ITEM_ID_ALL5)
+    palItems.addItems(ITEM_ID_STR6, ITEM_ID_ALL5)
+    mkItems.addItems(ITEM_ID_STR6, ITEM_ID_ALL5)
+    blmItems.addItems(ITEM_ID_INT6, ITEM_ID_ALL5)
+    amItems.addItems(ITEM_ID_INT6_EXISTING, ITEM_ID_ALL5_EXISTING)
+    palItems.addItems(ITEM_ID_STR6_EXISTING, ITEM_ID_ALL5_EXISTING)
+    mkItems.addItems(ITEM_ID_STR6_EXISTING, ITEM_ID_ALL5_EXISTING)
+    blmItems.addItems(ITEM_ID_INT6_EXISTING, ITEM_ID_ALL5_EXISTING)
+
+    for i = 0 to bj_MAX_PLAYERS - 1
+        playerShopUI[i] = new ShopUI(players[i], null)
+        CreateTrigger()
+        ..registerPlayerKeyPress(players[i], OSKEY_ESCAPE, OSKEY_META.NONE, true)
+        ..addAction() ->
+            let id = GetTriggerPlayer().getId()
+            if playerShopUI[id].isEnabled()
+                playerShopUI[id].closeShop()
+                if GetLocalPlayer().getId() == id
+                    ClearSelection()
+                    SelectUnit(playerHeroes[id],true)
+
+            else
+                playerShopUI[id].openShop()
+
+    doAfter(3) -> 
+        for i = 0 to bj_MAX_PLAYERS - 1
+            if players[i].getSlotState() == PLAYER_SLOT_STATE_PLAYING
+                players[i].setGold(1000)
+                playerHeroes[i] = createUnit(players[i], getHeroId(i), players[i].getStartLocation(), angle(0))
+                playerShopUI[i].start(playerHeroes[i])

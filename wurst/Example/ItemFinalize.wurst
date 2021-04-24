@@ -1,0 +1,15 @@
+package ItemFinalize
+
+import ItemInShop
+import public ExampleItems
+
+/*
+This file finalizes all items. It must therefore run after all item definitions.
+Simply import all your item definition packages.
+Use public import to avoid warnings.
+If you use items, instead of importing the item definitions, import this package.
+This ensures you only use finalized item Ids
+*/
+
+init
+    ItemInShop.finalize()

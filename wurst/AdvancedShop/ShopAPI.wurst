@@ -1,0 +1,147 @@
+package ShopAPI
+
+import ItemInShop
+
+/**
+Buys the item for the hero, if the hero has enough gold.
+Required items are considered and used to reduce the cost.
+**/
+public function tryBuy(unit hero, ItemInShop itm) returns item
+    if hero == null
+        return null
+    let cost = getItemCostForHero(hero, itm)
+    let gold = hero.getOwner().getGold()
+    if cost > gold
+        return null
+    else
+        hero.getOwner().addGold(-cost)
+        heroRemoveRequiredItems(hero, itm)
+        let boughtItem = createItem(itm.getItemId(), hero.getPos())
+        
+        hero.addItemHandle(boughtItem)
+
+        return boughtItem
+
+/**
+Attempts to buy the item for the hero. If not enough gold is available,
+required items are attempted to be bought instead. Only buys items, if
+there is space (considers freed space by required items).
+**/
+public function tryBuyPartially(unit hero, ItemInShop itm) returns int
+    tryBuyPartiallySetup(hero)
+    return tryBuyPartially(itm)
+
+/**
+Returns the item cost for the hero. Items are cheaper, if the hero already has required items.
+**/
+public function getItemCostForHero(unit hero, ItemInShop itm) returns int
+    if hero == null
+        return itm.getTotalCost()
+    let inv = new HeroInventory(hero)
+    int cost = itm.getSingleCost()
+    for ItemInShop required in itm.getRequirements()
+        cost += getItemCostHelp(hero, required, inv)
+
+    destroy inv
+    
+    return cost
+
+/**
+Returns true, if the hero has space for the item. Recipe items always have space, if you have at least one requirement.
+**/
+public function hasSpaceForItem(unit hero, ItemInShop itm) returns bool
+    let currentCost = getItemCostForHero(hero, itm)
+    let totalCost = itm.getTotalCost()
+    return currentCost < totalCost or not hero.isInventoryFull()
+
+function getItemCostHelp(unit hero, ItemInShop itm, HeroInventory inv) returns int
+    int cost = 0
+    if not inv.useItem(itm.getItemId())
+        cost += itm.getSingleCost()
+        for ItemInShop required in itm.getRequirements()
+            cost += getItemCostHelp(hero, required, inv)
+    return cost
+
+int array heroRemoveRequiredItemsSlotItemId
+unit heroRemoveRequiredItemsHero
+
+function heroRemoveRequiredItemsHelp(ItemInShop itm)
+    for ItemInShop required in itm.getRequirements()
+        int slotIndex = -1
+        let itemId = required.getItemId()
+        for slot = 0 to 5
+            if heroRemoveRequiredItemsSlotItemId[slot] == itemId
+                slotIndex = slot
+                break
+
+        if slotIndex != -1
+            let slotItem = heroRemoveRequiredItemsHero.itemInSlot(slotIndex)
+            heroRemoveRequiredItemsHero.removeItem(slotItem)
+            slotItem.remove()
+            heroRemoveRequiredItemsSlotItemId[slotIndex] = 0
+        else
+            heroRemoveRequiredItemsHelp(required)
+
+function heroRemoveRequiredItems(unit hero, ItemInShop itm)
+    heroRemoveRequiredItemsHero = hero
+    for slot = 0 to 5
+        heroRemoveRequiredItemsSlotItemId[slot] = hero.itemInSlot(slot).getTypeId()
+
+    heroRemoveRequiredItemsHelp(itm)
+
+int array heroTryBuyItemsSlotItemId
+int heroTryBuyItemsFreeSlots = 0
+unit heroTryBuyItemsHero
+
+function tryBuyPartiallySetup(unit hero)
+    heroTryBuyItemsHero = hero
+    heroTryBuyItemsFreeSlots = 0
+    for slot = 0 to 5
+        heroTryBuyItemsSlotItemId[slot] = hero.itemInSlot(slot).getTypeId()
+        if heroTryBuyItemsSlotItemId[slot] == 0
+            heroTryBuyItemsFreeSlots += 1
+
+function tryBuyPartially(ItemInShop itm) returns int
+    let currentCost = getItemCostForHero(heroTryBuyItemsHero, itm)
+    let totalCost = itm.getTotalCost()
+    // if currentCost < totalCost, then the hero has at least one required item, whose space can be used for the final item
+    if currentCost < totalCost or heroTryBuyItemsFreeSlots > 0
+        let gold = heroTryBuyItemsHero.getOwner().getGold()
+        if gold >= currentCost
+            tryBuy(heroTryBuyItemsHero, itm)
+            return 1
+        else
+            int ret = 0
+            for ItemInShop required in itm.getRequirements()
+                if not heroTryBuyItemsHero.hasItemById(required.getItemId())
+                    let bought = tryBuyPartially(required)
+                    if bought > 0
+                        tryBuyPartiallySetup(heroTryBuyItemsHero)
+                        ret = 2
+            return ret
+    return 0
+
+/*
+    A hero inventory is a virtual container that stores the number of each item type a hero has.
+    This information is used to determine the cost of item recipes.
+*/
+public class HeroInventory
+
+    private static hashtable hTable = InitHashtable()
+
+    construct(unit hero)
+        for i = 0 to 5
+            let itemTypeId = hero.itemInSlot(i).getTypeId()
+            if itemTypeId != 0
+                hTable.saveInt(this castTo int, itemTypeId, 1 + hTable.loadInt(this castTo int, itemTypeId))
+
+    function useItem(int itemTypeId) returns boolean
+        let n = hTable.loadInt(this castTo int, itemTypeId)
+        if n > 0
+            hTable.saveInt(this castTo int, itemTypeId, n-1)
+            return true
+        else
+            return false
+
+    ondestroy
+        hTable.flushChild(this castTo int)

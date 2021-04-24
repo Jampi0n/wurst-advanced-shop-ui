@@ -1,0 +1,26 @@
+package ShopConfig
+
+
+public string array CATEGORY_NAMES
+
+@configurable public constant MAX_ITEMS_IN_LIST = 30
+@configurable public constant NUM_CATEGORIES = 5
+@configurable public constant RECOMMENDED_CATEGORY = 0
+
+@configurable public constant MAX_BUILDS_INTO_ICONS = 12
+@configurable public constant MAX_RECIPE_TREE_ICONS = 24
+
+// category and item selected initially when the hero opens the shop for the first time
+// this item must exist for this hero
+@configurable public constant STARTING_CATEGORY = 0
+@configurable public constant STARTING_ITEM = 0
+
+
+@configurable public function configShopCategories()
+    CATEGORY_NAMES[0] = "Recommended"
+    CATEGORY_NAMES[1] = "Category 1"
+    CATEGORY_NAMES[2] = "Category 2"
+    CATEGORY_NAMES[3] = "Category 3"
+    CATEGORY_NAMES[4] = "Category 4"
+
+
