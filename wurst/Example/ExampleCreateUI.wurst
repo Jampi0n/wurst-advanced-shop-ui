@@ -1,6 +1,6 @@
-package CreateUI
+package ExampleCreateUI
 
-import ItemFinalize
+import ExampleItemFinalize
 import ShopUI
 import ClosureTimers
 import UnitIds
