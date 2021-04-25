@@ -314,7 +314,6 @@ public class ShopUI
     protected static function classInit()
         onItemAcquire.addAction(function onItemGetStatic)
         onItemLose.addAction(function onItemDropStatic)
-        configShopCategories()
 
 
     @noinline
@@ -376,8 +375,8 @@ public class ShopUI
 
         // categories
 
-        for i = 0 to NUM_CATEGORIES - 1
-            let fw = setCategoryButton(i, this.frameCategories.addTextButton(CATEGORY_NAMES[i]))
+        for i = 0 to ItemInShop.getNumPages() - 1
+            let fw = setCategoryButton(i, this.frameCategories.addTextButton(ItemInShop.getPageName(i)))
             let fh = fw.frame()
             fh.setPoint(FRAMEPOINT_TOP, this.frameCategories, FRAMEPOINT_TOP, 0, -0.03 - 0.035 * i)
             buttonToIndex.put(fh.getHandleId(), i)
@@ -452,11 +451,11 @@ public class ShopUI
 
     @inline
     function getCategoryButton(int index) returns FrameTextButton
-        return categoryButton[(this castTo int) * NUM_CATEGORIES + index]
+        return categoryButton[(this castTo int) * ItemInShop.getNumPages() + index]
     
     @inline        
     function setCategoryButton(int index, FrameTextButton fw) returns FrameTextButton
-        categoryButton[(this castTo int) * NUM_CATEGORIES + index] = fw
+        categoryButton[(this castTo int) * ItemInShop.getNumPages() + index] = fw
         return fw
 
     @inline

@@ -11,7 +11,6 @@ import ShopFunctionConfig
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
-
 function LinkedList<ItemInShop>.sortItemList()
     this.sortWith() (a, b) ->
         return shopConfig_sortItems(a,b)
@@ -84,6 +83,9 @@ public class ItemInShop
 
     private static constant itemIdToItemInShop = new HashMap<int,ItemInShop>
 
+    private static int numPages = 0
+    private static string array pageName
+
     static function classInit()
         for i=0 to NUM_CATEGORIES-1
             itemsInCategory[i] = new LinkedList<ItemInShop>()
@@ -116,7 +118,8 @@ public class ItemInShop
         this.totalCost = totalCost
         this.singleCost = -1
         itemsInCategory[this.category].add(this)
-
+        if itemsInCategory[this.category].size() > MAX_ITEMS_IN_LIST and not AUTO_SPLIT_CATEGORIES
+            error("Too many items in category: " + CATEGORY_NAMES[this.category])
         let itm = createItem(itemId, vec2(0,0))
         this.icon = itm.getIconPath()
         this.name = itm.getName()
@@ -172,6 +175,7 @@ public class ItemInShop
 
     /** After all items have been created the buildsInto lists are built.**/
     static function finalize()
+        configShopCategories()
         for ItemInShop itm in allItems
             itm.calculateGoldCost()
 
@@ -211,7 +215,45 @@ public class ItemInShop
         for i = 0 to NUM_CATEGORIES-1
             itemsInCategory[i].sortItemList()
 
-        for i = 0 to NUM_CATEGORIES-1
+        if AUTO_SPLIT_CATEGORIES
+            let categorySplitList = new LinkedList<LinkedList<LinkedList<ItemInShop>>>()
+            for i = 0 to NUM_CATEGORIES-1
+                let splitList = new LinkedList<LinkedList<ItemInShop>>()
+                while itemsInCategory[i].size() > MAX_ITEMS_IN_LIST
+                    splitList.add(new LinkedList<ItemInShop>())
+                    for j = 0 to min(MAX_ITEMS_IN_LIST, itemsInCategory[i].size()) - 1
+                        splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
+                splitList.add(new LinkedList<ItemInShop>())
+                for j = 0 to itemsInCategory[i].size() - 1
+                    splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
+                categorySplitList.add(splitList)
+            int k = 0
+            for category in categorySplitList
+                for _ in category
+                    if k >= NUM_CATEGORIES
+                        itemsInCategory[k] = new LinkedList<ItemInShop>()
+                    else
+                        itemsInCategory[k].clear()
+                    k++
+            numPages = k
+            k = 0
+            var categoryIndex = 0
+            for category in categorySplitList
+                if category.size() > 1
+                    var splitPageIndex = 1
+                    for splitPage in category
+                        pageName[k] = CATEGORY_NAMES[categoryIndex] + "(" + splitPageIndex.toString() + "/" + category.size().toString() + ")"
+                        itemsInCategory[k].addAll(splitPage)
+                        k++
+                        splitPageIndex++
+                else
+                    pageName[k] = CATEGORY_NAMES[categoryIndex]
+                    itemsInCategory[k].addAll(category.getFirst())
+                    k++
+                categoryIndex++
+
+
+        for i = 0 to numPages-1
             itemsPerCategory[i] = itemsInCategory[i].size()
             int j = 0
             for ItemInShop itm in itemsInCategory[i]
@@ -265,6 +307,12 @@ public class ItemInShop
             return itemIdToItemInShop.get(itemId)
         else
             return null
+
+    static function getNumPages() returns int
+        return numPages
+
+    static function getPageName(int index) returns string
+        return pageName[index]
 
 init
     ItemInShop.classInit()

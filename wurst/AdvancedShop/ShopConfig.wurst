@@ -15,6 +15,9 @@ public string array CATEGORY_NAMES
 @configurable public constant STARTING_CATEGORY = 0
 @configurable public constant STARTING_ITEM = 0
 
+// automatically splits categories into multiple pages, if number of items exceeds MAX_ITEMS_IN_LIST
+@configurable public constant AUTO_SPLIT_CATEGORIES = true
+
 
 @configurable public function configShopCategories()
     CATEGORY_NAMES[0] = "Recommended"
