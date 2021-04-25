@@ -5,6 +5,10 @@ import ObjectIdGenerator
 import ItemConfiguration
 import ItemConfigurationCompiletime
 import ItemIds
+import ItemObjEditing
+import ItemInShop
+import AbilityObjEditing
+
 
 // wurst generation
 public constant ITEM_ID_STR3 = compiletime(newItem(Icons.bTNGauntletsOfOgrePower))
@@ -46,34 +50,34 @@ function initItems()
 
     setupItem(ITEM_ID_STR3, 1, basicCost)
     setInfo("Gauntlets of Ogre Strength", "+ {0} strength".format(basic.toString()))
-    setPassiveAbility(ABIL_STR3)
+    setPassiveAbilities(ABIL_STR3)
     setupItem(ITEM_ID_STR6, 1, advancedCost)
     setInfo("Belt of Giant Strength", "+ {0} strength".format(advanced.toString()))
-    setPassiveAbility(ABIL_STR6)
+    setPassiveAbilities(ABIL_STR6)
     addRequirement(ITEM_ID_STR3)
     addRequirement(ITEM_ID_STR3)
     setupItem(ITEM_ID_INT3, 2, basicCost)
     setInfo("Mantle of Intelligence", "+ {0} intelligence".format(basic.toString()))
-    setPassiveAbility(ABIL_INT3)
+    setPassiveAbilities(ABIL_INT3)
     setupItem(ITEM_ID_INT6, 2, advancedCost)
     setInfo("Robe of the Magi", "+ {0} intelligence".format(advanced.toString()))
-    setPassiveAbility(ABIL_INT6)
+    setPassiveAbilities(ABIL_INT6)
     addRequirement(ITEM_ID_INT3)
     addRequirement(ITEM_ID_INT3)
     setupItem(ITEM_ID_AGI3, 3, basicCost)
     setInfo("Slippers of Agility", "+ {0} agility".format(basic.toString()))
-    setPassiveAbility(ABIL_AGI3)
+    setPassiveAbilities(ABIL_AGI3)
     setupItem(ITEM_ID_AGI6, 3, advancedCost)
     setInfo("Boots of Quel'thalas", "+ {0} agility".format(advanced.toString()))
-    setPassiveAbility(ABIL_AGI6)
+    setPassiveAbilities(ABIL_AGI6)
     addRequirement(ITEM_ID_AGI3)
     addRequirement(ITEM_ID_AGI3)
     setupItem(ITEM_ID_ALL2, 4, basicAllCost)
     setInfo("Circlet of Nobility", "+ {0} all stats".format(basicAll.toString()))
-    setPassiveAbility(ABIL_ALL2)
+    setPassiveAbilities(ABIL_ALL2)
     setupItem(ITEM_ID_ALL5, 4, advancedAllCost)
     setInfo("Crown of Kings", "+ {0} all stats".format(advancedAll.toString()))
-    setPassiveAbility(ABIL_ALL5)
+    setPassiveAbilities(ABIL_ALL5)
     addRequirement(ITEM_ID_STR6)
     addRequirement(ITEM_ID_INT6)
     addRequirement(ITEM_ID_AGI6)
@@ -128,7 +132,7 @@ function initItemsExisting()
     setupItem(ITEM_ID_CLAW15, 4, 800)
     addRequirement(ITEM_ID_CLAW12)
     
-
 init
     initItems()
     initItemsExisting()
+    
