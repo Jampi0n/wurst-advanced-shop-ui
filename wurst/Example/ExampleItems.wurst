@@ -5,7 +5,6 @@ import ObjectIdGenerator
 import ItemConfiguration
 import ItemConfigurationCompiletime
 import ItemIds
-import ItemObjEditing
 import ItemInShop
 import AbilityObjEditing
 
