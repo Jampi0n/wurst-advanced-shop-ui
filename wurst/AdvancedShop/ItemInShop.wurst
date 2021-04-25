@@ -67,6 +67,7 @@ public class ItemInShop
     private int recipeSize = 1
     private int visibleRecipeSize = 1
     private bool buildsIntoStarted = false
+    private bool enablePageBreak = true
 
     private HashList<ItemInShop> buildsIntoDirectly
     private HashList<ItemInShop> buildsIntoTransitively
@@ -165,6 +166,9 @@ public class ItemInShop
     function isPowerUp() returns bool
         return this.powerUp
 
+    function setEnablePageBreak(bool enable)
+        this.enablePageBreak = enable
+
     function calculateGoldCost()
         int childrenCost = 0
         for ItemInShop child in this.requirements
@@ -221,8 +225,13 @@ public class ItemInShop
                 let splitList = new LinkedList<LinkedList<ItemInShop>>()
                 while itemsInCategory[i].size() > MAX_ITEMS_IN_LIST
                     splitList.add(new LinkedList<ItemInShop>())
+                    let candidates = new LinkedList<ItemInShop>()
                     for j = 0 to min(MAX_ITEMS_IN_LIST, itemsInCategory[i].size()) - 1
-                        splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
+                        candidates.add(itemsInCategory[i].removeAt(0))
+                    while not candidates.peek().enablePageBreak
+                        itemsInCategory[i].addtoStart(candidates.pop())
+                    splitList.get(splitList.size()-1).addAll(candidates)
+                    destroy candidates
                 splitList.add(new LinkedList<ItemInShop>())
                 for j = 0 to itemsInCategory[i].size() - 1
                     splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
@@ -251,6 +260,13 @@ public class ItemInShop
                     itemsInCategory[k].addAll(category.getFirst())
                     k++
                 categoryIndex++
+
+            for category in categorySplitList
+                while not category.isEmpty()
+                    destroy category.pop()
+            while not categorySplitList .isEmpty()
+                destroy categorySplitList.pop()
+            destroy categorySplitList
 
 
         for i = 0 to numPages-1

@@ -11,7 +11,7 @@ import public LinkedList
 int currentItemId
 public ItemDefinition currentItemDefinition
 public ItemInShop currentItemInShop
-
+bool defaultPageBreak = true
 
 public function setupItem(int itemId, int category, int goldCost)
     if compiletime
@@ -22,9 +22,20 @@ public function setupItem(int itemId, int category, int goldCost)
         currentItemId = itemId
         currentItemInShop = ItemInShop.retrieveItemFromId(itemId)
         currentItemInShop.setupItem(category, goldCost)
+        currentItemInShop.setEnablePageBreak(defaultPageBreak)
 
 public function addRequirement(int itemId)
     if not compiletime
         let child = ItemInShop.retrieveItemFromId(itemId)
         currentItemInShop.addRequirement(child)
 
+public function enablePageBreak()
+    if not compiletime
+        currentItemInShop.setEnablePageBreak(true)
+public function disablePageBreak()
+    if not compiletime
+        currentItemInShop.setEnablePageBreak(false)
+public function defaultEnablePageBreak()
+    defaultPageBreak = true
+public function defaultDisablePageBreak()
+    defaultPageBreak = false
