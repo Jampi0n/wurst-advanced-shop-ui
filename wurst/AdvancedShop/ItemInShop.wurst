@@ -11,14 +11,9 @@ import ShopFunctionConfig
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
-function LinkedList<ItemInShop>.sortItemList()
-    this.sortWith() (a, b) ->
-        return shopConfig_sortItems(a,b)
-
-function LinkedList<ItemInShop>.sortBuildsIntoList()
-    this.sortWith() (a, b) ->
-        return shopConfig_sortBuildsInto(a,b)
-
+/**
+Converts a string to an icon path.
+**/
 public function getIconPath(string icon) returns string
     string s = icon
     if icon.length() < 20 or not icon.startsWith("ReplaceableTextures")
@@ -27,6 +22,9 @@ public function getIconPath(string icon) returns string
         s += ".blp"
     return s
 
+/**
+Retrieves the item definition for items generated with newItem().
+**/
 public function getItemDefintion(int itemId) returns ItemDefinition
     if not compiletime
         error("getItemDefintion cannot be used at runtime")
@@ -34,7 +32,10 @@ public function getItemDefintion(int itemId) returns ItemDefinition
     return ITEM_DEFINITIONS.get(itemId)
 
 
-//compiletime to create an item object + icon texture
+/**
+Creates a default item template without abilities.
+And stores the item definition for use with getItemDefintion().
+**/
 public function newItem(string icon) returns int
     let id = ITEM_ID_GEN.next()
     if compiletime
@@ -54,6 +55,13 @@ public function newItem(string icon) returns int
         ITEM_DEFINITIONS.put(id, iDef)
     return id
 
+function LinkedList<ItemInShop>.sortItemList()
+    this.sortWith() (a, b) ->
+        return shopConfig_sortItems(a,b)
+
+function LinkedList<ItemInShop>.sortBuildsIntoList()
+    this.sortWith() (a, b) ->
+        return shopConfig_sortBuildsInto(a,b)
 
 public class ItemInShop
 

@@ -1,6 +1,8 @@
 package ItemConfigurationCompiletime
 
 import ItemConfiguration
+import LinkedList
+import ObjectIds
 
 string currentDescription = ""
 
@@ -25,22 +27,32 @@ public function addUnique(string desc)
 public function addActive(string name, string desc)
     currentDescription += COLOR_GOLD.toColorString() + name + " (Active):|r|n" + desc + "|n"
 
-public function setPassiveAbility(int id)
-    if compiletime
-        currentItemDefinition.setAbilities(id.toRawCode())
-        currentItemDefinition.setActivelyUsed(false)
-        setCooldownGroup(id)
-
-public function setAbilities(vararg int ids)
+/**
+Adds abilities and sets the item to be passive.
+**/
+public function setPassiveAbilities(vararg int ids)
     if compiletime
         let list = new LinkedList<int>
         for id in ids
             list.add(id)
-        let result = list.joinBy((int i) -> i.toRawCode(), ",")
+        let result = commaList(list)
+        currentItemDefinition.setAbilities(result)
+        setCooldownGroup(result.substring(0, 4))
+        currentItemDefinition.setActivelyUsed(false)
+
+/**
+Adds abilities and sets the item to be active.
+The first ability should be the active one and will be used as cooldown group.
+**/
+public function setActiveAbilities(vararg int ids)
+    if compiletime
+        let list = new LinkedList<int>
+        for id in ids
+            list.add(id)
+        let result = commaList(list)
         currentItemDefinition.setAbilities(result)
         setCooldownGroup(result.substring(0, 4))
         currentItemDefinition.setActivelyUsed(true)
-        destroy list
 
 public function setCooldownGroup(int id)
     if compiletime

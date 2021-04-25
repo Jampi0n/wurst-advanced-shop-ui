@@ -1,11 +1,7 @@
 package ItemConfiguration
 
 import ItemObjEditing
-import public ClosureTimers
-import public AbilityObjEditing
-import public ObjectIds
-import public ItemInShop
-import public LinkedList
+import ItemInShop
 
 
 int currentItemId
@@ -28,6 +24,10 @@ public function addRequirement(int itemId)
     if not compiletime
         let child = ItemInShop.retrieveItemFromId(itemId)
         currentItemInShop.addRequirement(child)
+
+public function makePowerUp()
+    if not compiletime
+        currentItemInShop.makePowerUp()
 
 public function enablePageBreak()
     if not compiletime

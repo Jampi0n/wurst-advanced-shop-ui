@@ -7,6 +7,7 @@ import initlater ShopAPI
 Runs when the buy button is clicked.
 shopConfig_shopCanBuy should always be used to check if buying is possible
 tryBuy should be used to buy the item
+Can be used to add custom error/success messages, play sounds, etc.
 **/
 @configurable public function shopConfig_shopClickBuy(unit u, ItemInShop itm)
     if shopConfig_shopCanBuy(u, itm)
@@ -20,8 +21,6 @@ tryBuy should be used to buy the item
 Returns true if the item can be bought.
 should check for gold cost
 other common conditions are inventory space, hero alive, hero close to shop, ...
-The default implementation only checks for gold, hero alive and inventory space.
-Inventory space is ignored for power up items.
 **/
 @configurable public function shopConfig_shopCanBuy(unit u, ItemInShop itm) returns bool
     let cost = getItemCostForHero(u, itm)
@@ -35,6 +34,9 @@ Runs when the shop is opened by player p.
 Common use case is hiding other UI parts like multiboards or timers.
 **/
 @configurable public function shopConfig_onOpenShop(player _p)
+/**
+Runs when the sgop is closed by player p.
+**/
 @configurable public function shopConfig_onCloseShop(player _p)
 
 /**

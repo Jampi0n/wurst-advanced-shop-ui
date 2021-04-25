@@ -3,12 +3,14 @@ package ShopConfig
 
 public string array CATEGORY_NAMES
 
-@configurable public constant MAX_ITEMS_IN_LIST = 30
+// number of categories
+// this is usually also the number of pages
+// if AUTO_SPLIT_CATEGORIES is enabled, a category can have multiple pages
 @configurable public constant NUM_CATEGORIES = 5
+// the category number of recommended items
+// set to -1 to disable recommended items
+// the first category that is not recommended items needs to have at least one item!
 @configurable public constant RECOMMENDED_CATEGORY = 0
-
-@configurable public constant MAX_BUILDS_INTO_ICONS = 12
-@configurable public constant MAX_RECIPE_TREE_ICONS = 24
 
 // category and item selected initially when the hero opens the shop for the first time
 // this item must exist for this hero
@@ -18,7 +20,7 @@ public string array CATEGORY_NAMES
 // automatically splits categories into multiple pages, if number of items exceeds MAX_ITEMS_IN_LIST
 @configurable public constant AUTO_SPLIT_CATEGORIES = true
 
-
+// set the category names for your categories
 @configurable public function configShopCategories()
     CATEGORY_NAMES[0] = "Recommended"
     CATEGORY_NAMES[1] = "Strength"
@@ -26,4 +28,11 @@ public string array CATEGORY_NAMES
     CATEGORY_NAMES[3] = "Agility"
     CATEGORY_NAMES[4] = "Neutral"
 
+// The following options are for advanced configuration and should usually be left untouched.
 
+// number of icons that can be shown in the item list
+@configurable public constant MAX_ITEMS_IN_LIST = 30
+// number of icons that can be shown in the builds into list
+@configurable public constant MAX_BUILDS_INTO_ICONS = 12
+// number of icons that can be shown in the recipe tree
+@configurable public constant MAX_RECIPE_TREE_ICONS = 24
