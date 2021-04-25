@@ -1,8 +1,13 @@
 package ShopFunctionConfig
 
-import ItemInShop
-import ShopAPI
+import initlater ItemInShop
+import initlater ShopAPI
 
+/**
+Runs when the buy button is clicked.
+shopConfig_shopCanBuy should always be used to check if buying is possible
+tryBuy should be used to buy the item
+**/
 @configurable public function shopConfig_shopClickBuy(unit u, ItemInShop itm)
     if shopConfig_shopCanBuy(u, itm)
         let boughtItem = tryBuy(u, itm)
@@ -11,6 +16,13 @@ import ShopAPI
         else
             print(boughtItem.getName() + " was bought!")
 
+/**
+Returns true if the item can be bought.
+should check for gold cost
+other common conditions are inventory space, hero alive, hero close to shop, ...
+The default implementation only checks for gold, hero alive and inventory space.
+Inventory space is ignored for power up items.
+**/
 @configurable public function shopConfig_shopCanBuy(unit u, ItemInShop itm) returns bool
     let cost = getItemCostForHero(u, itm)
     if u.getOwner().getGold() >= cost
@@ -18,5 +30,28 @@ import ShopAPI
             return true
     return false
 
+/**
+Runs when the shop is opened by player p.
+Common use case is hiding other UI parts like multiboards or timers.
+**/
 @configurable public function shopConfig_onOpenShop(player _p)
 @configurable public function shopConfig_onCloseShop(player _p)
+
+/**
+Sort items within one category.
+**/
+@configurable public function shopConfig_sortItems(ItemInShop a, ItemInShop b) returns int
+    // return a castTo int - b castTo int // sort by setup order
+    return a.getTotalCost() - b.getTotalCost() // sort by gold cost
+
+/**
+Sort items in the builds into list.
+**/
+@configurable public function shopConfig_sortBuildsInto(ItemInShop a, ItemInShop b) returns int
+    return shopConfig_sortItems(a,b)
+
+/**
+Direct parents will always be earlier than transitive parents in the builds into list.
+(sorts direct parents and transitive parents individually and puts direct parents first)
+**/
+@configurable public constant PRIORITIZE_DIRECT_PARENTS = true

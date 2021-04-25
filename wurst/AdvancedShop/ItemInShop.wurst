@@ -7,13 +7,18 @@ import HashList
 import ObjectIdGenerator
 import ItemObjEditing
 import ShopConfig
+import ShopFunctionConfig
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
 
 function LinkedList<ItemInShop>.sortItemList()
     this.sortWith() (a, b) ->
-        return a.getTotalCost() - b.getTotalCost()
+        return shopConfig_sortItems(a,b)
+
+function LinkedList<ItemInShop>.sortBuildsIntoList()
+    this.sortWith() (a, b) ->
+        return shopConfig_sortBuildsInto(a,b)
 
 public function getIconPath(string icon) returns string
     string s = icon
@@ -172,25 +177,33 @@ public class ItemInShop
 
         for ItemInShop itm in allItems
             itm.calculateBuildsInto()
-            /*for ItemInShop child in itm.requirements
-                addBuildsInto(child, itm, 0)*/
 
         for ItemInShop itm in allItems
             let sortingList = new LinkedList<ItemInShop>()
-            for ItemInShop b in itm.buildsIntoDirectly
-                sortingList.add(b)
-               
-            sortingList.sortItemList()
-            for ItemInShop b in sortingList
-                itm.buildsIntoCombined.add(b)
+            if PRIORITIZE_DIRECT_PARENTS
+                for ItemInShop b in itm.buildsIntoDirectly
+                    sortingList.add(b)
+                
+                sortingList.sortBuildsIntoList()
+                for ItemInShop b in sortingList
+                    itm.buildsIntoCombined.add(b)
 
-            sortingList.clear()
-            for ItemInShop b in itm.buildsIntoTransitively
-                sortingList.add(b)
+                sortingList.clear()
+                for ItemInShop b in itm.buildsIntoTransitively
+                    sortingList.add(b)
 
-            sortingList.sortItemList()
-            for ItemInShop b in sortingList
-                itm.buildsIntoCombined.add(b)
+                sortingList.sortBuildsIntoList()
+                for ItemInShop b in sortingList
+                    itm.buildsIntoCombined.add(b)
+            else
+                for ItemInShop b in itm.buildsIntoDirectly
+                    sortingList.add(b)
+                for ItemInShop b in itm.buildsIntoTransitively
+                    sortingList.add(b)
+                
+                sortingList.sortBuildsIntoList()
+                for ItemInShop b in sortingList
+                    itm.buildsIntoCombined.add(b)
 
             destroy sortingList
 

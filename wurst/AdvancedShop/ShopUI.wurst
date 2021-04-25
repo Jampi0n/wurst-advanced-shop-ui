@@ -665,7 +665,7 @@ public class ShopUI
 
         this.currentPage = newPage
 
-        let size = getItemCount(newPage)
+        let size = min(getItemCount(newPage), MAX_ITEMS_IN_LIST)
         for i = size to this.itemsOnPage
             this.getListButton(i).frame().hide()
         for i = 0 to size - 1
