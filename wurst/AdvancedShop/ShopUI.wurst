@@ -12,8 +12,8 @@ import ErrorHandling
 import SoundUtils
 import ClosureFrames
 import ShopAPI
-import ShopConfig
-import ShopFunctionConfig
+import public ShopConfig
+import public ShopFunctionConfig
 import Execute
 
 

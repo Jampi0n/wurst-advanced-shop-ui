@@ -6,8 +6,8 @@ import HashMap
 import HashList
 import ObjectIdGenerator
 import ItemObjEditing
-import ShopConfig
-import ShopFunctionConfig
+import public ShopConfig
+import public ShopFunctionConfig
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
