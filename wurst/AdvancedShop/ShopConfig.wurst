@@ -12,6 +12,8 @@ public string array CATEGORY_NAMES
 // the first category that is not recommended items needs to have at least one item!
 @configurable public constant RECOMMENDED_CATEGORY = 0
 
+@configurable public constant VISIBLE_RECIPE_TREE_HEIGHT = 3
+
 // category and item selected initially when the hero opens the shop for the first time
 // this item must exist for this hero
 @configurable public constant STARTING_CATEGORY = 0

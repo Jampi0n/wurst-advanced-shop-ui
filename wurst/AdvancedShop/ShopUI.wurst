@@ -1,21 +1,17 @@
 package ShopUI
 
 import ItemInShop
-import HashMap
-import Icons
 import LinkedList
 import TimerUtils
 import ClosureTimers
-import FrameWrapperDefinitions
 import RecommendedItems
 import ErrorHandling
 import SoundUtils
-import ClosureFrames
 import ShopAPI
 import public ShopConfig
 import public ShopFunctionConfig
 import Execute
-
+import ShopAppearance
 
 constant SOUND_CLICK = new SoundDefinition(Sounds.mouseClick1, false, false)
 
@@ -38,7 +34,7 @@ class RecipeTree
 
     construct(ShopUI shopUI, ItemInShop recipe)
         this.shopUI = shopUI
-        this.root = new RecipeTreeNode(this, 15, 0, recipe, null)
+        this.root = new RecipeTreeNode(this, 0, 0, recipe, null)
         this.inv = null
         this.completed = true
         this.refresh()
@@ -78,11 +74,6 @@ class RecipeTreeNode
     ShopUI shopUI
     RecipeTree tree
 
-    framehandle parentLink
-    framehandle childLink
-    framehandle childBar
-
-    FrameButtonWithCost btn
 
 
     /*
@@ -109,35 +100,22 @@ class RecipeTreeNode
         if parent != null
             this.width = parent.width / parent.children
         else
-            this.width = 31
+            this.width = 2.0
     
         this.index = this.tree.usedButtons
         if this.index >= MAX_RECIPE_TREE_ICONS
             error("Recipe " + tree.root.itm.getName() + " uses too many recipe icons: " + (this.index + 1).toString() + "/" + MAX_RECIPE_TREE_ICONS.toString())
-        this.btn = this.shopUI.getRecipeTreeButton(this.index)
         this.tree.usedButtons++
-        if this.shopUI.selectedItem == this.itm
-            this.btn.setSelected(true)
-        else
-            this.btn.setSelected(false)
-
+        let appearance = this.shopUI.appearance
+        appearance.recipeTreeButtonVisible(index, true)
+        appearance.recipeTreeButtonSelect(index, this.shopUI.selectedItem == this.itm)
         this.shopUI.setRecipeTreeItem(this.index, this.itm)
+        appearance.recipeTreeButtonSetXY(index, x, y)
+
+        appearance.recipeTreeButtonSetItem(index, itm)
 
 
-        btn.frame()..clearAllPoints()
-        ..setPoint(FRAMEPOINT_TOP, this.shopUI.frameRecipeTree, FRAMEPOINT_TOP, convertX(x), convertY(y))
-        ..show()
-        
-        btn.setIcon(this.itm.getIcon())
-
-        parentLink = this.shopUI.getBranch(index * 3)
-        if y != 0
-            this.shopUI.modifyBranch(parentLink, convertX(this.x)-BRANCH_WIDTH/2, convertY(this.y)+0.012, convertX(this.x) + BRANCH_WIDTH/2, convertY(this.y))
-            parentLink.show()
-        else
-            parentLink.hide()
-
-        if y < 2
+        if y < VISIBLE_RECIPE_TREE_HEIGHT - 1
             this.children =  this.itm.getRequirements().size()
             int i = 0
             for ItemInShop child in this.itm.getRequirements()
@@ -145,54 +123,41 @@ class RecipeTreeNode
                 this.childrenList.add(childNode)
                 i++
 
-            this.childLink = this.shopUI.getBranch(index * 3 + 1)
-            if this.children >= 1
-                this.shopUI.modifyBranch(childLink, convertX(this.x)-BRANCH_WIDTH/2, convertY(this.y)-0.042, convertX(this.x) + BRANCH_WIDTH/2, convertY(this.y)-0.05)              
-                childLink.show()
-            else
-                childLink.hide()
-            
-            this.childBar = this.shopUI.getBranch(index * 3 + 2)
-            if this.children >= 2    
-                let xFrom = convertX(getChildXNew(this.x, 0, this.children, this.width))
-                let xTo = convertX(getChildXNew(this.x, this.children - 1, this.children, this.width))
-                this.shopUI.modifyBranch(childBar, xFrom, convertY(this.y)-0.0525 +BRANCH_WIDTH/2, xTo, convertY(this.y)-0.0525 - BRANCH_WIDTH/2) 
-                childBar.show()
-            else
-                childBar.hide()
+            let childIndexList = this.childrenList.map() (RecipeTreeNode t) ->
+                return t.index
+            appearance.recipeTreeButtonConnect(index, childIndexList)
+            destroy childIndexList
         else
             this.children = 0
 
 
     function displayCheckedCost()
-
-        btn.setChecked(true)
-        btn.setCost(getItemCostForHero(this.tree.shopUI.getInventoryUnit(), this.itm))
+        let appearance = this.shopUI.appearance
+        appearance.recipeTreeButtonCheck(index, true)
+        appearance.recipteTreeButtonSetCost(index, getItemCostForHero(this.tree.shopUI.getInventoryUnit(), this.itm))
         for RecipeTreeNode childNode in this.childrenList
             childNode.displayCheckedCost()
 
 
     function displayCost(bool root)
-
-
         if not root and this.tree.inv.useItem(this.itm.getItemId())
             displayCheckedCost()
         else
-            btn.setChecked(false)
+            let appearance = this.shopUI.appearance
+            appearance.recipeTreeButtonCheck(index, false)
+            
             for RecipeTreeNode childNode in this.childrenList
                 childNode.displayCost(false)
 
-
-            btn.setCost(getItemCostForHero(this.tree.shopUI.getInventoryUnit(), this.itm))
+            appearance.recipteTreeButtonSetCost(index, getItemCostForHero(this.tree.shopUI.getInventoryUnit(), this.itm))
 
 
     ondestroy
         if this.childrenList.size() != this.children
             error("!!!")
-
-        this.parentLink.hide()
-        this.childLink.hide()
-        this.childBar.hide()
+            let appearance = this.shopUI.appearance
+            appearance.recipeTreeButtonConnect(index, null)
+            appearance.recipeTreeButtonVisible(index, false)
 
         for RecipeTreeNode child in this.childrenList
             destroy child
@@ -230,34 +195,9 @@ public class ShopUI
     protected static ShopUI array playerUIs
     private int playerIndex
 
-    protected framehandle frameShopUI
-    protected framehandle frameItemList
-    protected framehandle frameCategories
-    protected framehandle frameRecipeTree
-    protected framehandle frameBuildsInto
-    protected framehandle frameItemDesc
 
-    protected static constant buttonToIndex = new HashMap<int,int>
-
-    protected static FrameButtonWithCost array itemListButtons
-    protected constant onClickListButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickListButton() )
-
-    private static FrameTextButton array categoryButton
-    protected constant onClickCategoryButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickCategoryButton() )
-
-    private static FrameButtonWithCost array recipeTreeButton
     private static ItemInShop array recipeTreeItem
-    private static framehandle array recipeTreeBranch
-    protected constant onClickRecipeTreeButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickRecipeTreeButton() )
-
-    private static FrameButton array buildsIntoButton
     private static ItemInShop array buildsIntoItem
-    protected constant onClickBuildsInto = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickBuildsInto() )
-
-    private FrameTextButton buyButton
-    private FrameButton itemIcon
-    private framehandle itemTitle
-    private framehandle itemDescription
 
     private RecipeTree recipeTree = null
    
@@ -268,10 +208,19 @@ public class ShopUI
     private timer updateTimer = null
     private int currentCost = 0
 
+    protected ShopAppearance appearance
+
+    construct(player whichPlayer, unit inventoryUnit, ShopAppearance appearance)
+        this.setup(whichPlayer, inventoryUnit, appearance)
+
     construct(player whichPlayer, unit inventoryUnit)
+        this.setup(whichPlayer, inventoryUnit, new ShopAppearance())
+
+    private function setup(player whichPlayer, unit inventoryUnit, ShopAppearance appearance)
+        this.appearance = appearance
         execute() ->
             this.createUiElements()
-        this.frameShopUI.hide()
+        appearance.shopBackgroundvisible(false)
 
         this.setInventoryUnit(inventoryUnit)
         this.inventoryUnitTypeId = this.inventoryUnit.getTypeId()
@@ -310,157 +259,34 @@ public class ShopUI
         onItemAcquire.addAction(function onItemGetStatic)
         onItemLose.addAction(function onItemDropStatic)
 
-
     @noinline
     private function createUiElements()
-        let totalHeight = 0.38
-        let totalWidth = 0.8
-        let recipeTreeHeight = 0.2
-        let itemDescHeight = 0.18
-        let categoryWidth = 0.17
-        let itemListWidth = 0.23
-        let recipeTreeWidth = 0.27
-        let buildsIntoWidth = 0.13
-        let itemDescWidth = recipeTreeWidth + buildsIntoWidth
-        this.frameShopUI = createFrame("TW_Shop_Window", GAME_UI, 0, 0)
-        ..hide()
-
-        ..setAbsPoint(FRAMEPOINT_TOPLEFT, 0.0, 0.55)
-        ..setSize(totalWidth, totalHeight)
-        this.frameCategories = createFrame("TW_Shop_Background", this.frameShopUI, 0, PermanentIndex.getNewIndex())
-        ..setSize(categoryWidth, totalHeight)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.frameShopUI, FRAMEPOINT_TOPLEFT, 0, 0)
-        this.frameItemList = createFrame("TW_Shop_Background", this.frameShopUI, 0, PermanentIndex.getNewIndex())
-        ..setSize(itemListWidth, totalHeight)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.frameCategories, FRAMEPOINT_TOPRIGHT, 0, 0)
-        this.frameRecipeTree = createFrame("TW_Shop_Background", this.frameShopUI, 0, PermanentIndex.getNewIndex())
-        ..setSize(recipeTreeWidth, recipeTreeHeight)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.frameItemList, FRAMEPOINT_TOPRIGHT, 0, 0)
-        this.frameItemDesc = createFrame("TW_Shop_Background", this.frameShopUI, 0, PermanentIndex.getNewIndex())
-        ..setSize(itemDescWidth, itemDescHeight)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.frameRecipeTree, FRAMEPOINT_BOTTOMLEFT, 0, 0)
-        this.frameBuildsInto = createFrame("TW_Shop_Background", this.frameShopUI, 0, PermanentIndex.getNewIndex())
-        ..setSize(buildsIntoWidth, recipeTreeHeight)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.frameRecipeTree, FRAMEPOINT_TOPRIGHT, 0, 0)
-
-        // frame titles
-        createFrame("TW_Shop_Title", this.frameCategories, 0, PermanentIndex.getNewIndex())
-        ..setSize(categoryWidth - 0.04, 0.1)
-        ..setPoint(FRAMEPOINT_TOP, this.frameCategories, FRAMEPOINT_TOP, 0, -0.01)
-        ..setText("Categories:")
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
-
-        createFrame("TW_Shop_Title", this.frameItemList, 0, PermanentIndex.getNewIndex())
-        ..setSize(itemListWidth - 0.04, 0.1)
-        ..setPoint(FRAMEPOINT_TOP, this.frameItemList, FRAMEPOINT_TOP, 0, -0.01)
-        ..setText("Item List:")
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
-
-        createFrame("TW_Shop_Title", this.frameRecipeTree, 0, PermanentIndex.getNewIndex())
-        ..setSize(recipeTreeWidth - 0.04, 0.1)
-        ..setPoint(FRAMEPOINT_TOP, this.frameRecipeTree, FRAMEPOINT_TOP, 0, -0.01)
-        ..setText("Recipe Tree:")
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_LEFT)
-
-        createFrame("TW_Shop_Title", this.frameBuildsInto, 0, PermanentIndex.getNewIndex())
-        ..setSize(buildsIntoWidth - 0.04, 0.1)
-        ..setPoint(FRAMEPOINT_TOP, this.frameBuildsInto, FRAMEPOINT_TOP, 0, -0.01)
-        ..setText("Builds Into:")
-        ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
+        appearance.shopBackgroundCreate()
 
         // categories
-
+        appearance.pageBackgroundCreate()
         for i = 0 to ItemInShop.getNumPages() - 1
-            let fw = setCategoryButton(i, this.frameCategories.addTextButton(ItemInShop.getPageName(i)))
-            let fh = fw.frame()
-            fh.setPoint(FRAMEPOINT_TOP, this.frameCategories, FRAMEPOINT_TOP, 0, -0.03 - 0.035 * i)
-            buttonToIndex.put(fh.getHandleId(), i)
-            onClickCategoryButton.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
+            appearance.pageButtonCreate(i, getPageName(i))
 
         // item list
-
+        appearance.itemListBackgroundCreate()
         for i = 0 to MAX_ITEMS_IN_LIST - 1
-            let fw = setListButton(i, this.frameItemList.addIconWithCost(Icons.bTNDaggerOfEscape, GetRandomInt(0, 4000)))
-            let fh = fw.frame()
-            fh.setPoint(FRAMEPOINT_TOPLEFT, this.frameItemList, FRAMEPOINT_TOPLEFT, 0.02 + 0.04 * (i mod 5), -0.038 - 0.052 * (i div 5))
-            fh.hide()
-            buttonToIndex.put(fh.getHandleId(), i)
-            onClickListButton.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
-
+            appearance.itemListButtonCreate(i)
+            
         // recipe tree
-
+        appearance.recipeTreeBackgroundCreate()
         for i = 0 to MAX_RECIPE_TREE_ICONS - 1
-            let fw = setRecipeTreeButton(i, this.frameRecipeTree.addIconWithCost(Icons.bTNTemp, 0))
-            let fh = fw.frame()
-            fh.setPoint(FRAMEPOINT_TOPLEFT, this.frameRecipeTree, FRAMEPOINT_TOPLEFT)
-            fh.hide()
-            buttonToIndex.put(fh.getHandleId(), i)
-            setRecipeTreeItem(i, null)
-            onClickRecipeTreeButton.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
-
-        for i = 0 to MAX_RECIPE_TREE_LINKS - 1
-            let fh = createFrame("TW_Shop_RecipeTreeBranch", this.frameRecipeTree, 0, PermanentIndex.getNewIndex())
-            this.modifyBranch(fh, 0, 0, 0, 0)
-            fh.hide()
-            setBranch(i, fh)
-
+            appearance.recipeTreeButtonCreate(i)
+        
         // builds into
-
+        appearance.buildsIntoBackgroundCreate()
         for i = 0 to MAX_BUILDS_INTO_ICONS - 1
-            let fw = setBuildsIntoButton(i, this.frameBuildsInto.addIcon(Icons.bTNTemp))
-            let fh = fw.frame()
-            fh.setPoint(FRAMEPOINT_TOP, this.frameBuildsInto, FRAMEPOINT_TOP, 0.035 * ((i mod 3) - 1), -0.038 - 0.035 * (i div 3))
-            fh.hide()
-            buttonToIndex.put(fh.getHandleId(), i)
-            onClickBuildsInto.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
-
+            appearance.buildsIntoButtonCreate(i)
 
         // item description
 
-        this.itemIcon = this.frameItemDesc.addIcon(Icons.bTNTemp)
-        itemIcon.frame().setPoint(FRAMEPOINT_TOPLEFT, this.frameItemDesc, FRAMEPOINT_TOPLEFT, 0.015, -0.015)
-        this.itemTitle = createFrame("TW_Shop_Title", this.frameItemDesc, 0, PermanentIndex.getNewIndex())
-        ..setPoint(FRAMEPOINT_LEFT, this.itemIcon.frame(), FRAMEPOINT_RIGHT, 0.01, 0)
-        ..setText("Gauntlets of Ogre Strength")
-        ..setSize(recipeTreeWidth - 0.034, 0.03)
-        ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
-        this.buyButton = this.frameItemDesc.addTextButton("Buy for: 0")
-        buyButton.frame()..setPoint(FRAMEPOINT_TOPRIGHT, this.frameItemDesc, FRAMEPOINT_TOPRIGHT, -0.01, -0.015)
-        ..onClick() () ->
-            this.buyButton.frame()..setEnabled(false)..setEnabled(true)
-            shopConfig_shopClickBuy(this.inventoryUnit, this.selectedItem)
-        this.itemDescription = createFrame("TW_Shop_Text", this.frameItemDesc, 0, PermanentIndex.getNewIndex())
-        ..setSize(itemDescWidth - 0.03, itemDescHeight - 0.02)
-        ..setPoint(FRAMEPOINT_TOPLEFT, this.itemIcon.frame(), FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
-        ..setText("")
+        appearance.tooltipBackgroundCreate()
         
-
-    @inline
-    protected function getListButton(int index) returns FrameButtonWithCost
-        return itemListButtons[(this castTo int) * MAX_ITEMS_IN_LIST + index]
-    
-    @inline        
-    protected function setListButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
-        itemListButtons[(this castTo int) * MAX_ITEMS_IN_LIST + index] = fw
-        return fw
-
-    @inline
-    protected function getCategoryButton(int index) returns FrameTextButton
-        return categoryButton[(this castTo int) * ItemInShop.getNumPages() + index]
-    
-    @inline        
-    protected function setCategoryButton(int index, FrameTextButton fw) returns FrameTextButton
-        categoryButton[(this castTo int) * ItemInShop.getNumPages() + index] = fw
-        return fw
-
-    @inline
-    protected function getRecipeTreeButton(int index) returns FrameButtonWithCost
-        return recipeTreeButton[(this castTo int) * MAX_RECIPE_TREE_ICONS + index]
-    
-    @inline        
-    protected function setRecipeTreeButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
-        recipeTreeButton[(this castTo int) * MAX_RECIPE_TREE_ICONS + index] = fw
-        return fw
 
     @inline
     protected function getRecipeTreeItem(int index) returns ItemInShop
@@ -472,24 +298,6 @@ public class ShopUI
         return fw
 
     @inline
-    protected function getBranch(int index) returns framehandle
-        return recipeTreeBranch[(this castTo int) * MAX_RECIPE_TREE_LINKS + index]
-    
-    @inline        
-    protected function setBranch(int index, framehandle branch) returns framehandle
-        recipeTreeBranch[(this castTo int) * MAX_RECIPE_TREE_LINKS + index] = branch
-        return branch
-
-    @inline
-    protected function getBuildsIntoButton(int index) returns FrameButton
-        return buildsIntoButton[(this castTo int) * MAX_BUILDS_INTO_ICONS + index]
-    
-    @inline        
-    protected function setBuildsIntoButton(int index, FrameButton fw) returns FrameButton
-        buildsIntoButton[(this castTo int) * MAX_BUILDS_INTO_ICONS + index] = fw
-        return fw
-
-    @inline
     protected function getBuildsIntoItem(int index) returns ItemInShop
         return buildsIntoItem[(this castTo int) * MAX_BUILDS_INTO_ICONS + index]
     
@@ -497,12 +305,6 @@ public class ShopUI
     protected function setBuildsIntoItem(int index, ItemInShop fw) returns ItemInShop
         buildsIntoItem[(this castTo int) * MAX_BUILDS_INTO_ICONS + index] = fw
         return fw
-
-    @inline     
-    protected function modifyBranch(framehandle branch, real fromX, real fromY, real toX, real toY)
-        branch.setPoint(FRAMEPOINT_TOPLEFT, this.frameRecipeTree, FRAMEPOINT_TOP, fromX, fromY)
-        branch.setPoint(FRAMEPOINT_BOTTOMRIGHT, this.frameRecipeTree, FRAMEPOINT_TOP, toX, toY)
-
         
     function openShop()
         if this.enabled or not this.enableOpen 
@@ -515,7 +317,7 @@ public class ShopUI
         this.updateTimer.startPeriodic(0.1, () -> playerUIs[GetExpiredTimer().getData()].updateBuyButton(false) )
 
         if GetLocalPlayer() == this.forPlayer
-            this.frameShopUI.show()
+            appearance.shopBackgroundvisible(true)
             ClearSelection()
             EnableDragSelect(false, false)
             EnableSelect(false, false)
@@ -533,7 +335,7 @@ public class ShopUI
         this.updateTimer.pause()
 
         if GetLocalPlayer() == this.forPlayer
-            this.frameShopUI.hide()
+            appearance.shopBackgroundvisible(false)
             EnableDragSelect(true, true)
             EnableSelect(true, true)
 
@@ -543,25 +345,15 @@ public class ShopUI
     @inline
     private function loadItemListButton(int i)
         let itm = this.getItemFromList(this.currentPage, i)
-
-        let buttonWithCost = this.getListButton(i)
         if itm == this.selectedRecipe
-            //if GetLocalPlayer() == this.forPlayer
             this.selectedRecipeButton = i
-            buttonWithCost.frame().show()
-            buttonWithCost.setCost(itm.getTotalCost())
-            buttonWithCost.setIcon(itm.getIcon())
-            buttonWithCost.setSelected(true)
-            buttonWithCost.setChecked(false)
-            
+            appearance.itemListButtonVisible(i, true)
+            appearance.itemListButtonSetItem(i, itm)
+            appearance.itemListButtonSelect(i, true)
         else
-            //if GetLocalPlayer() == this.forPlayer
-            buttonWithCost.frame().show()
-            buttonWithCost.setCost(itm.getTotalCost())
-            buttonWithCost.setIcon(itm.getIcon())
-            buttonWithCost.setSelected(false)
-            buttonWithCost.setChecked(false)
-
+            appearance.itemListButtonVisible(i, true)
+            appearance.itemListButtonSetItem(i, itm)
+            appearance.itemListButtonSelect(i, false)
 
 
     private function refreshRecipeTree()
@@ -581,7 +373,7 @@ public class ShopUI
         this.itemsInRecipe = this.selectedRecipe.getVisibleRecipeSize()
 
         for i = itemsInRecipe to prevSize - 1
-            this.getRecipeTreeButton(i).frame().hide()
+            appearance.recipeTreeButtonVisible(i, false)
 
 
     function selectRecipe(ItemInShop newRecipe, bool forceRefresh)
@@ -590,7 +382,7 @@ public class ShopUI
             return
 
         if this.selectedRecipeButton != -1
-            this.getListButton(this.selectedRecipeButton).setSelected(false)
+            appearance.itemListButtonSelect(this.selectedRecipeButton, false)
 
         this.selectedRecipe = newRecipe
 
@@ -606,13 +398,13 @@ public class ShopUI
         if this.currentPage == RECOMMENDED_CATEGORY
             let index = RecommendedItems.getIndex(this.inventoryUnitTypeId, newRecipe)
             if index != -1
-                this.getListButton(index).setSelected(true)
+                appearance.itemListButtonSelect(index, true)
                 this.selectedRecipeButton = index
         else
             let cat = ItemInShop.getCategory(newRecipe)
             if cat == this.currentPage
                 let index = ItemInShop.getIndex(newRecipe)
-                this.getListButton(index).setSelected(true)
+                appearance.itemListButtonSelect(index, true)
                 this.selectedRecipeButton = index
 
 
@@ -624,28 +416,24 @@ public class ShopUI
 
         this.selectedItem = newItem
         
-        this.itemIcon.setIcon(newItem.getIcon())
-        this.itemTitle.setText(newItem.getName())
-        this.itemDescription.setText(newItem.getDescription())
+        appearance.tooltipSetItem(newItem)
         
         this.updateItemCost()
         this.updateBuyButton(true)
         
         for i = 0 to this.itemsInRecipe - 1
-            this.getRecipeTreeButton(i).setSelected(this.getRecipeTreeItem(i) == this.selectedItem)
-
+            appearance.recipeTreeButtonSelect(i, this.getRecipeTreeItem(i) == this.selectedItem)
 
         let size = min(this.selectedItem.getBuildsInto().size(), 12)
         for i = size to itemsInBuildsInto - 1
-            this.getBuildsIntoButton(i).frame().hide()
+            appearance.buildsIntoButtonvisible(i, false)
         this.itemsInBuildsInto = size
 
         int j = 0
         for ItemInShop itm in this.selectedItem.getBuildsInto()
             if j < MAX_BUILDS_INTO_ICONS
-                let btn = this.getBuildsIntoButton(j)
-                btn.frame().show()
-                btn.setIcon(itm.getIcon())
+                appearance.buildsIntoButtonvisible(j, true)
+                appearance.buildsIntoButtonSetItem(j, itm)
                 this.setBuildsIntoItem(j, itm)
                 j++
 
@@ -668,7 +456,7 @@ public class ShopUI
 
         let size = min(getItemCount(newPage), MAX_ITEMS_IN_LIST)
         for i = size to this.itemsOnPage
-            this.getListButton(i).frame().hide()
+            appearance.itemListButtonVisible(i, false)
         for i = 0 to size - 1
             loadItemListButton(i)
 
@@ -676,7 +464,7 @@ public class ShopUI
 
     private function updateItemCost()
         this.currentCost = getItemCostForHero(this.inventoryUnit, this.selectedItem)
-        this.buyButton.setName("Buy for: " + this.currentCost.toString())
+        appearance.tooltipSetBuyCost(this.currentCost)
 
     private function updateBuyButton(bool forceUpdate)
         bool canBuyNew
@@ -691,7 +479,7 @@ public class ShopUI
             return
 
         this.canBuy = canBuyNew
-        this.buyButton.frame().setEnabled(canBuyNew)
+        appearance.tooltipToggleBuy(canBuyNew)
             
     function getPlayer() returns player
         return this.forPlayer
@@ -735,38 +523,12 @@ public class ShopUI
     function isEnabled() returns bool
         return this.enabled
 
+    function getAppearance() returns ShopAppearance
+        return this.appearance
+
     @inline
     private function clickAnyButton()
         SOUND_CLICK.playForPlayer(this.forPlayer).snd.setVolume(125)
-
-    private function onClickCategoryButton()
-        let fh = BlzGetTriggerFrame()
-        let index = buttonToIndex.get(fh.getHandleId())
-        fh..setEnabled(false)..setEnabled(true)
-        setPage(index)
-
-    private function onClickListButton()
-        let fh = BlzGetTriggerFrame()
-        let index = buttonToIndex.get(fh.getHandleId())
-        fh..setEnabled(false)..setEnabled(true)
-        let clickedItem = this.getItemFromList(this.currentPage, index)
-        if clickedItem != null
-            selectRecipe(clickedItem, false)
-            clickAnyButton()
-
-    private function onClickRecipeTreeButton()
-        let fh = BlzGetTriggerFrame()
-        let index = buttonToIndex.get(fh.getHandleId())
-        fh..setEnabled(false)..setEnabled(true)
-        this.selectItem(this.getRecipeTreeItem(index), false)
-        clickAnyButton()
-
-    private function onClickBuildsInto()
-        let fh = BlzGetTriggerFrame()
-        let index = buttonToIndex.get(fh.getHandleId())
-        fh..setEnabled(false)..setEnabled(true)
-        this.selectRecipe(this.getBuildsIntoItem(index), false)
-
 
     private function onItemGet(item _itm)
         if this.enabled
@@ -792,9 +554,27 @@ public class ShopUI
         if shopUI != null and shopUI.inventoryUnit == u
             shopUI.onItemDrop(GetManipulatedItem())
 
+    static function clickPage(player p, int index)
+        playerUIs[p.getId()].setPage(index)
+    static function clickBuildsInto(player p, int index)
+        let shopUI = playerUIs[p.getId()]
+        shopUI.selectRecipe(shopUI.getBuildsIntoItem(index), false)
+    static function clickRecipeTree(player p, int index)
+        let shopUI = playerUIs[p.getId()]
+        shopUI.selectItem(shopUI.getRecipeTreeItem(index), false)
+        shopUI.clickAnyButton()
+    static function clickList(player p, int index)
+        let shopUI = playerUIs[p.getId()]
+        let clickedItem = shopUI.getItemFromList(shopUI.currentPage, index)
+        if clickedItem != null
+            shopUI.selectRecipe(clickedItem, false)
+            shopUI.clickAnyButton()
+    static function clickBuy(player p)
+        let shopUI = playerUIs[p.getId()]
+        shopConfig_shopClickBuy(shopUI.getInventoryUnit(), shopUI.selectedItem)
+
 
 
 
 init
-    print(loadTOCFile("tw_shop.toc"))
     ShopUI.classInit()

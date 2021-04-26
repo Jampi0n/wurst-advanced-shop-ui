@@ -301,7 +301,7 @@ public class ItemInShop
             if not child.buildsIntoTransitively.has(into)
                 child.buildsIntoTransitively.add(into)
             into.recipeSize++
-            if depth == 1
+            if depth < VISIBLE_RECIPE_TREE_HEIGHT - 1
                 into.visibleRecipeSize++
             child.addBuildsIntoTransitively(into, depth + 1)
 
