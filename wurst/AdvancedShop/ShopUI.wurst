@@ -21,7 +21,7 @@ constant SOUND_CLICK = new SoundDefinition(Sounds.mouseClick1, false, false)
 
 constant MAX_RECIPE_TREE_LINKS = MAX_RECIPE_TREE_ICONS * 3
 
-public function getChildXNew(real x, int childIndex, int numberOfChildren, real width) returns real
+function getChildXNew(real x, int childIndex, int numberOfChildren, real width) returns real
     if numberOfChildren == 1
         return x
     else
@@ -237,32 +237,27 @@ public class ShopUI
     protected framehandle frameBuildsInto
     protected framehandle frameItemDesc
 
-    static constant buttonToIndex = new HashMap<int,int>
+    protected static constant buttonToIndex = new HashMap<int,int>
 
     protected static FrameButtonWithCost array itemListButtons
-    constant onClickListButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickListButton() )
+    protected constant onClickListButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickListButton() )
 
     private static FrameTextButton array categoryButton
-    constant onClickCategoryButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickCategoryButton() )
+    protected constant onClickCategoryButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickCategoryButton() )
 
     private static FrameButtonWithCost array recipeTreeButton
     private static ItemInShop array recipeTreeItem
     private static framehandle array recipeTreeBranch
-    constant onClickRecipeTreeButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickRecipeTreeButton() )
+    protected constant onClickRecipeTreeButton = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickRecipeTreeButton() )
 
     private static FrameButton array buildsIntoButton
     private static ItemInShop array buildsIntoItem
-    constant onClickBuildsInto = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickBuildsInto() )
-
+    protected constant onClickBuildsInto = CreateTrigger()..addAction( () -> playerUIs[GetTriggerPlayer().getId()].onClickBuildsInto() )
 
     private FrameTextButton buyButton
     private FrameButton itemIcon
     private framehandle itemTitle
     private framehandle itemDescription
-
-
-
-
 
     private RecipeTree recipeTree = null
    
@@ -317,7 +312,7 @@ public class ShopUI
 
 
     @noinline
-    function createUiElements()
+    private function createUiElements()
         let totalHeight = 0.38
         let totalWidth = 0.8
         let recipeTreeHeight = 0.2
@@ -441,34 +436,34 @@ public class ShopUI
         
 
     @inline
-    function getListButton(int index) returns FrameButtonWithCost
+    protected function getListButton(int index) returns FrameButtonWithCost
         return itemListButtons[(this castTo int) * MAX_ITEMS_IN_LIST + index]
     
     @inline        
-    function setListButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
+    protected function setListButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
         itemListButtons[(this castTo int) * MAX_ITEMS_IN_LIST + index] = fw
         return fw
 
     @inline
-    function getCategoryButton(int index) returns FrameTextButton
+    protected function getCategoryButton(int index) returns FrameTextButton
         return categoryButton[(this castTo int) * ItemInShop.getNumPages() + index]
     
     @inline        
-    function setCategoryButton(int index, FrameTextButton fw) returns FrameTextButton
+    protected function setCategoryButton(int index, FrameTextButton fw) returns FrameTextButton
         categoryButton[(this castTo int) * ItemInShop.getNumPages() + index] = fw
         return fw
 
     @inline
-    function getRecipeTreeButton(int index) returns FrameButtonWithCost
+    protected function getRecipeTreeButton(int index) returns FrameButtonWithCost
         return recipeTreeButton[(this castTo int) * MAX_RECIPE_TREE_ICONS + index]
     
     @inline        
-    function setRecipeTreeButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
+    protected function setRecipeTreeButton(int index, FrameButtonWithCost fw) returns FrameButtonWithCost
         recipeTreeButton[(this castTo int) * MAX_RECIPE_TREE_ICONS + index] = fw
         return fw
 
     @inline
-    function getRecipeTreeItem(int index) returns ItemInShop
+    protected function getRecipeTreeItem(int index) returns ItemInShop
         return recipeTreeItem[(this castTo int) * MAX_RECIPE_TREE_ICONS + index]
     
     @inline        
@@ -477,34 +472,34 @@ public class ShopUI
         return fw
 
     @inline
-    function getBranch(int index) returns framehandle
+    protected function getBranch(int index) returns framehandle
         return recipeTreeBranch[(this castTo int) * MAX_RECIPE_TREE_LINKS + index]
     
     @inline        
-    function setBranch(int index, framehandle branch) returns framehandle
+    protected function setBranch(int index, framehandle branch) returns framehandle
         recipeTreeBranch[(this castTo int) * MAX_RECIPE_TREE_LINKS + index] = branch
         return branch
 
     @inline
-    function getBuildsIntoButton(int index) returns FrameButton
+    protected function getBuildsIntoButton(int index) returns FrameButton
         return buildsIntoButton[(this castTo int) * MAX_BUILDS_INTO_ICONS + index]
     
     @inline        
-    function setBuildsIntoButton(int index, FrameButton fw) returns FrameButton
+    protected function setBuildsIntoButton(int index, FrameButton fw) returns FrameButton
         buildsIntoButton[(this castTo int) * MAX_BUILDS_INTO_ICONS + index] = fw
         return fw
 
     @inline
-    function getBuildsIntoItem(int index) returns ItemInShop
+    protected function getBuildsIntoItem(int index) returns ItemInShop
         return buildsIntoItem[(this castTo int) * MAX_BUILDS_INTO_ICONS + index]
     
     @inline        
-    function setBuildsIntoItem(int index, ItemInShop fw) returns ItemInShop
+    protected function setBuildsIntoItem(int index, ItemInShop fw) returns ItemInShop
         buildsIntoItem[(this castTo int) * MAX_BUILDS_INTO_ICONS + index] = fw
         return fw
 
     @inline     
-    function modifyBranch(framehandle branch, real fromX, real fromY, real toX, real toY)
+    protected function modifyBranch(framehandle branch, real fromX, real fromY, real toX, real toY)
         branch.setPoint(FRAMEPOINT_TOPLEFT, this.frameRecipeTree, FRAMEPOINT_TOP, fromX, fromY)
         branch.setPoint(FRAMEPOINT_BOTTOMRIGHT, this.frameRecipeTree, FRAMEPOINT_TOP, toX, toY)
 
@@ -589,7 +584,7 @@ public class ShopUI
             this.getRecipeTreeButton(i).frame().hide()
 
 
-    private function selectRecipe(ItemInShop newRecipe, bool forceRefresh)
+    function selectRecipe(ItemInShop newRecipe, bool forceRefresh)
         if newRecipe == this.selectedRecipe and not forceRefresh
             selectItem(newRecipe, false)
             return
@@ -622,7 +617,7 @@ public class ShopUI
 
 
 
-    private function selectItem(ItemInShop newItem, bool forceRefresh)
+    function selectItem(ItemInShop newItem, bool forceRefresh)
         if newItem == this.selectedItem and not forceRefresh
             return
 
@@ -654,9 +649,16 @@ public class ShopUI
                 this.setBuildsIntoItem(j, itm)
                 j++
 
+    function getPage() returns int
+        return this.currentPage
 
+    function getNumPages() returns int
+        return ItemInShop.getNumPages()
 
-    private function setPage(int newPage)
+    function getPageName(int index) returns string
+        return ItemInShop.getPageName(index)
+
+    function setPage(int newPage)
         if newPage == this.currentPage
             return
 
@@ -716,7 +718,7 @@ public class ShopUI
         else
             return ItemInShop.getItemCount(category)
 
-    function selectFirst()
+    private function selectFirst()
         let itm = getItemFromList(STARTING_CATEGORY,STARTING_ITEM)
         if itm == null
             return
