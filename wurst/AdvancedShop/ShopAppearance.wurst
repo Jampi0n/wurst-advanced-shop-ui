@@ -38,6 +38,7 @@ public class ShopAppearance
     real itemListWidth
     real recipeTreeWidth
     real buildsIntoWidth
+    real buildsIntoHeight
     real itemDescWidth
     real recipeTreeInnerWidth
     real recipeTreeInnerHeight
@@ -46,6 +47,8 @@ public class ShopAppearance
     real iconWithTextHeight
     real recipeTreeVerticalMargin
     real recipeTreeHorizontalMargin
+    real categoryHeight
+    real itemListHeight
 
     static constant frameToIndex = new HashMap<int,int>
 
@@ -74,17 +77,22 @@ public class ShopAppearance
         totalHeight = 0.38
         totalWidth = 0.8
         recipeTreeHeight = 0.2
-        itemDescHeight = 0.18
-        categoryWidth = 0.17
-        itemListWidth = 0.23
         recipeTreeWidth = 0.27
         buildsIntoWidth = 0.13
+        buildsIntoHeight = recipeTreeHeight
+        itemDescWidth = recipeTreeWidth + buildsIntoWidth
+        itemDescHeight = 0.18
+        categoryWidth = 0.17
+        categoryHeight = totalHeight
+        itemListWidth = 0.23
+        itemListHeight = totalHeight
+        
         iconWidth = 0.03
         iconHeight = 0.03
         iconWithTextHeight = 0.042
         recipeTreeVerticalMargin = 0.01
         recipeTreeHorizontalMargin = 0.01
-        itemDescWidth = recipeTreeWidth + buildsIntoWidth
+        
         recipeTreeInnerWidth = recipeTreeWidth - 2 * recipeTreeHorizontalMargin
         recipeTreeInnerHeight = (recipeTreeHeight - iconWithTextHeight) - 2 * recipeTreeVerticalMargin
         
@@ -109,7 +117,7 @@ public class ShopAppearance
 
     function pageBackgroundCreate()
         pageBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
-        ..setSize(categoryWidth, totalHeight)
+        ..setSize(categoryWidth, categoryHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, shopBackground, FRAMEPOINT_TOPLEFT, 0, 0)
         createFrame("TW_Shop_Title", pageBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(categoryWidth - 0.04, 0.1)
@@ -131,7 +139,7 @@ public class ShopAppearance
 
     function itemListBackgroundCreate()
         itemListBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
-        ..setSize(itemListWidth, totalHeight)
+        ..setSize(itemListWidth, itemListHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, pageBackground, FRAMEPOINT_TOPRIGHT, 0, 0)
         createFrame("TW_Shop_Title", itemListBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(itemListWidth - 0.04, 0.1)
@@ -235,7 +243,7 @@ public class ShopAppearance
 
     function buildsIntoBackgroundCreate()
         buildsIntoBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
-        ..setSize(buildsIntoWidth, recipeTreeHeight)
+        ..setSize(buildsIntoWidth, buildsIntoHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, recipeTreeBackground, FRAMEPOINT_TOPRIGHT, 0, 0)
         createFrame("TW_Shop_Title", buildsIntoBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(buildsIntoWidth - 0.04, 0.1)
