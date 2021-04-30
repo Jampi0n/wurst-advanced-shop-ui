@@ -254,8 +254,9 @@ public class ShopAppearance
 
     function recipeTreeButtonVisible(int index, bool flag)
         if not flag
-            let parentLink = getBranch(index * 3)
-            parentLink.hide()
+            getBranch(index * 3).hide()
+            getBranch(index * 3 + 1).hide()
+            getBranch(index * 3 + 2).hide()
             recipeTreeButtonConnect(index, null)
         getRecipeTreeButton(index).frame().setVisible(flag)
 
