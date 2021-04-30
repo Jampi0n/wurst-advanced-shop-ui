@@ -128,6 +128,7 @@ class RecipeTreeNode
             appearance.recipeTreeButtonConnect(index, childIndexList)
             destroy childIndexList
         else
+            appearance.recipeTreeButtonConnect(index, null)
             this.children = 0
 
 
