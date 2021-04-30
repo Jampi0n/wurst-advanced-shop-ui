@@ -267,6 +267,7 @@ public class ShopUI
         appearance.pageBackgroundCreate()
         for i = 0 to ItemInShop.getNumPages() - 1
             appearance.pageButtonCreate(i, getPageName(i))
+            appearance.pageButtonSelect(i, false)
 
         // item list
         appearance.itemListBackgroundCreate()
@@ -450,6 +451,9 @@ public class ShopUI
         if newPage == this.currentPage
             return
 
+        if currentPage != -1
+            appearance.pageButtonSelect(this.currentPage, false)
+        appearance.pageButtonSelect(newPage, true)
         this.selectedRecipeButton = -1
 
         this.currentPage = newPage

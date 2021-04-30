@@ -23,6 +23,10 @@ public class ShopAppearance
     FrameButton itemIcon
     framehandle itemTitle
     framehandle itemDescription
+    framehandle itemListTitle
+    framehandle pageListTitle
+    framehandle recipeTreeTitle
+    framehandle buildsIntoTitle
     static framehandle array recipeTreeBranch
     static FrameButtonWithCost array itemListButtons
     static FrameTextButton array categoryButton
@@ -119,7 +123,7 @@ public class ShopAppearance
         pageBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(categoryWidth, categoryHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, shopBackground, FRAMEPOINT_TOPLEFT, 0, 0)
-        createFrame("TW_Shop_Title", pageBackground, 0, PermanentIndex.getNewIndex())
+        pageListTitle = createFrame("TW_Shop_Title", pageBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(categoryWidth - 0.04, 0.1)
         ..setPoint(FRAMEPOINT_TOP, pageBackground, FRAMEPOINT_TOP, 0, -0.01)
         ..setText("Categories:")
@@ -127,12 +131,14 @@ public class ShopAppearance
 
     function pageBackgroundvisible(bool flag)
         pageBackground.setVisible(flag)
+
     function pageButtonCreate(int index, string text)
         let fw = setCategoryButton(index, pageBackground.addTextButton(text))
         let fh = fw.frame()
         fh.setPoint(FRAMEPOINT_TOP, pageBackground, FRAMEPOINT_TOP, 0, -0.03 - 0.035 * index)
         setFrameIndex(fh, index)
         onClickCategoryButton.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
+
     function pageButtonSelect(int index, bool flag)
         let sizeFactor = flag ? 1 : 0.9
         getCategoryButton(index).frame().setSize(0.125 * sizeFactor, 0.035 * sizeFactor)
@@ -141,13 +147,15 @@ public class ShopAppearance
         itemListBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(itemListWidth, itemListHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, pageBackground, FRAMEPOINT_TOPRIGHT, 0, 0)
-        createFrame("TW_Shop_Title", itemListBackground, 0, PermanentIndex.getNewIndex())
+        itemListTitle = createFrame("TW_Shop_Title", itemListBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(itemListWidth - 0.04, 0.1)
         ..setPoint(FRAMEPOINT_TOP, itemListBackground, FRAMEPOINT_TOP, 0, -0.01)
         ..setText("Item List:")
         ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
+
     function itemListBackgroundvisible(bool flag)
         itemListBackground.setVisible(flag)
+        
     function itemListButtonCreate(int index)
         let fw = setListButton(index, itemListBackground.addIconWithCost(Icons.bTNDaggerOfEscape, GetRandomInt(0, 4000)))
         let fh = fw.frame()
@@ -156,11 +164,14 @@ public class ShopAppearance
         fh.hide()
         setFrameIndex(fh, index)
         onClickListButton.registerFrameEvent(fh, FRAMEEVENT_CONTROL_CLICK)
+
     function itemListButtonSetItem(int index, ItemInShop itm)
         getListButton(index)..setIcon(itm.getIcon())
         ..setCost(itm.getTotalCost())
+
     function itemListButtonSelect(int index, bool flag)
         getListButton(index).setSelected(flag)
+
     function itemListButtonVisible(int index, bool flag)
         getListButton(index).frame().setVisible(flag)
 
@@ -168,13 +179,15 @@ public class ShopAppearance
         recipeTreeBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(recipeTreeWidth, recipeTreeHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, itemListBackground, FRAMEPOINT_TOPRIGHT, 0, 0)
-        createFrame("TW_Shop_Title", recipeTreeBackground, 0, PermanentIndex.getNewIndex())
+        recipeTreeTitle = createFrame("TW_Shop_Title", recipeTreeBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(recipeTreeWidth - 0.04, 0.1)
         ..setPoint(FRAMEPOINT_TOP, recipeTreeBackground, FRAMEPOINT_TOP, 0, -0.01)
         ..setText("Recipe Tree:")
         ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_LEFT)
+
     function recipeTreeBackgroundvisible(bool flag)
         recipeTreeBackground.setVisible(flag)
+
     function recipeTreeButtonCreate(int index)
         let fw = setRecipeTreeButton(index, recipeTreeBackground.addIconWithCost(Icons.bTNTemp, 0))
         let fh = fw.frame()
@@ -190,14 +203,19 @@ public class ShopAppearance
 
     function recipeTreeButtonSelect(int index, bool flag)
         getRecipeTreeButton(index).setSelected(flag)
+
     function recipeTreeButtonSetItem(int index, ItemInShop itm)
         getRecipeTreeButton(index).setIcon(itm.getIcon())
+
     function recipteTreeButtonSetCost(int index, int cost)
         getRecipeTreeButton(index).setCost(cost)
+
     function recipeTreeButtonCheck(int index, bool flag)
         getRecipeTreeButton(index).setChecked(flag)
+
     function recipeTreeButtonConvertDepth(int depth) returns real
         return -((depth / (VISIBLE_RECIPE_TREE_HEIGHT - 1)) * recipeTreeInnerHeight) - recipeTreeVerticalMargin
+
     function recipeTreeButtonSetXY(int index, real x, int y)
         getRecipeTreeButton(index).frame()..clearAllPoints()
         ..setPoint(FRAMEPOINT_TOP, recipeTreeBackground, FRAMEPOINT_TOP, x * recipeTreeInnerWidth/2, recipeTreeButtonConvertDepth(y))
@@ -245,13 +263,15 @@ public class ShopAppearance
         buildsIntoBackground = createFrame("TW_Shop_Background", shopBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(buildsIntoWidth, buildsIntoHeight)
         ..setPoint(FRAMEPOINT_TOPLEFT, recipeTreeBackground, FRAMEPOINT_TOPRIGHT, 0, 0)
-        createFrame("TW_Shop_Title", buildsIntoBackground, 0, PermanentIndex.getNewIndex())
+        buildsIntoTitle = createFrame("TW_Shop_Title", buildsIntoBackground, 0, PermanentIndex.getNewIndex())
         ..setSize(buildsIntoWidth - 0.04, 0.1)
         ..setPoint(FRAMEPOINT_TOP, buildsIntoBackground, FRAMEPOINT_TOP, 0, -0.01)
         ..setText("Builds Into:")
         ..setTextAlignment(TEXT_JUSTIFY_TOP, TEXT_JUSTIFY_CENTER)
+
     function buildsIntoBackgroundvisible(bool flag)
         buildsIntoBackground.setVisible(flag)
+
     function buildsIntoButtonCreate(int index)
         let fw = setBuildsIntoButton(index, buildsIntoBackground.addIcon(Icons.bTNTemp))
         let fh = fw.frame()
@@ -262,6 +282,7 @@ public class ShopAppearance
 
     function buildsIntoButtonSetItem(int index, ItemInShop itm)
         getBuildsIntoButton(index).setIcon(itm.getIcon())
+
     function buildsIntoButtonvisible(int index, bool flag)
         getBuildsIntoButton(index).frame().setVisible(flag)
 
@@ -287,12 +308,15 @@ public class ShopAppearance
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
     function tooltipBackgroundvisible(bool flag)
         tooltipBackground.setVisible(flag)
+
     function tooltipSetItem(ItemInShop itm)
         itemIcon.setIcon(itm.getIcon())
         itemTitle.setText(itm.getName())
         itemDescription.setText(itm.getDescription())
+
     function tooltipSetBuyCost(int cost)
         buyButton.setName("Buy for: " + cost.toString())
+
     function tooltipToggleBuy(bool flag)
         buyButton.frame().setEnabled(flag)
 
@@ -317,7 +341,6 @@ public class ShopAppearance
     @inline
     function getRecipeTreeButton(int index) returns FrameButtonWithCost
         return recipeTreeButton[(this castTo int) * MAX_RECIPE_TREE_ICONS + index]
-
 
     @inline
     function getRecipeTreeButtonPos(int index) returns vec2
