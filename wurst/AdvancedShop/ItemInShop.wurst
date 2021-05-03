@@ -55,9 +55,9 @@ public function newItem(string icon) returns int
         ITEM_DEFINITIONS.put(id, iDef)
     return id
 
-function LinkedList<ItemInShop>.sortItemList()
+function LinkedList<ItemInShop>.sortItemList(int category)
     this.sortWith() (a, b) ->
-        return shopConfig_sortItems(a,b)
+        return shopConfig_sortItems(a, b, category)
 
 function LinkedList<ItemInShop>.sortBuildsIntoList()
     this.sortWith() (a, b) ->
@@ -66,7 +66,6 @@ function LinkedList<ItemInShop>.sortBuildsIntoList()
 public class ItemInShop
 
     private int itemId
-    private int category = -1
     private string icon = ""
     private int totalCost = -1
     private int singleCost = -1
@@ -77,6 +76,9 @@ public class ItemInShop
     private bool buildsIntoStarted = false
     private bool enablePageBreak = true
 
+    private HashMap<int,int> indexPerCategory = new HashMap<int,int>
+    private HashMap<int,int> setupOrderPerCategory = new HashMap<int,int>
+    private LinkedList<int> categories = new LinkedList<int>
     private HashList<ItemInShop> buildsIntoDirectly
     private HashList<ItemInShop> buildsIntoTransitively
     private LinkedList<ItemInShop> buildsIntoCombined
@@ -88,14 +90,12 @@ public class ItemInShop
     private static LinkedList<ItemInShop> array itemsInCategory
     private static ItemInShop array itemsInCategoryArray
     private static int array itemsPerCategory
-    private static constant itemToIndex = new HashMap<ItemInShop,int>
 
     private static constant itemIdToItemInShop = new HashMap<int,ItemInShop>
 
     private static int numPages = 0
     private static string array pageName
-    private static int staticSetupOrder = 0
-    private int setupOrder
+    private static HashMap<int,int> staticSetupOrderPerCategory = new HashMap<int,int>
 
     static function classInit()
         for i=0 to NUM_CATEGORIES-1
@@ -125,19 +125,22 @@ public class ItemInShop
         allItems.add(this)
 
     function setupItem(int category, int totalCost)
-        this.category = category
         this.totalCost = totalCost
         this.singleCost = -1
-        itemsInCategory[this.category].add(this)
-        if itemsInCategory[this.category].size() > MAX_ITEMS_IN_LIST and not AUTO_SPLIT_CATEGORIES
-            error("Too many items in category: " + CATEGORY_NAMES[this.category])
+        this.categories.add(category)
+        itemsInCategory[category].add(this)
+        if itemsInCategory[category].size() > MAX_ITEMS_IN_LIST and not AUTO_SPLIT_CATEGORIES
+            error("Too many items in category: " + CATEGORY_NAMES[category])
         let itm = createItem(itemId, vec2(0,0))
         this.icon = itm.getIconPath()
         this.name = itm.getName()
         this.description = itm.getExtendedTooltip()
         itm.remove()
-        this.setupOrder = staticSetupOrder
-        staticSetupOrder++
+        if not staticSetupOrderPerCategory.has(category)
+            staticSetupOrderPerCategory.put(category, 0)
+        let staticSetupOrder = staticSetupOrderPerCategory.get(category)
+        this.setupOrderPerCategory.put(category, staticSetupOrder)
+        staticSetupOrderPerCategory.put(category, staticSetupOrder + 1)
 
     function addRequirement(ItemInShop requirement)
         this.requirements.add(requirement)
@@ -178,8 +181,19 @@ public class ItemInShop
     function isPowerUp() returns bool
         return this.powerUp
 
-    function getSetupOrder() returns int
-        return this.setupOrder
+    function getSetupOrder(int category) returns int
+        if this.setupOrderPerCategory.has(category)
+            return this.setupOrderPerCategory.get(category)
+        else
+            return -1
+
+    function getIndex(int category) returns int
+        if this.indexPerCategory.has(category)
+            return this.indexPerCategory.get(category)
+        return -1
+
+    function getCategories() returns LinkedList<int>
+        return this.categories
 
     function setEnablePageBreak(bool enable)
         this.enablePageBreak = enable
@@ -232,7 +246,7 @@ public class ItemInShop
 
 
         for i = 0 to NUM_CATEGORIES-1
-            itemsInCategory[i].sortItemList()
+            itemsInCategory[i].sortItemList(i)
 
         if AUTO_SPLIT_CATEGORIES
             let categorySplitList = new LinkedList<LinkedList<LinkedList<ItemInShop>>>()
@@ -289,7 +303,7 @@ public class ItemInShop
             int j = 0
             for ItemInShop itm in itemsInCategory[i]
                 itemsInCategoryArray[i * MAX_ITEMS_IN_LIST + j] = itm
-                itemToIndex.put(itm, i * MAX_ITEMS_IN_LIST + j)
+                itm.indexPerCategory.put(i, j)
                 j++
 
     private function calculateBuildsInto()
@@ -311,15 +325,6 @@ public class ItemInShop
             if depth < VISIBLE_RECIPE_TREE_HEIGHT - 1
                 into.visibleRecipeSize++
             child.addBuildsIntoTransitively(into, depth + 1)
-
-    static function getArrayIndex(ItemInShop itm) returns int
-        return itemToIndex.get(itm)
-
-    static function getIndex(ItemInShop itm) returns int
-        return itemToIndex.get(itm) mod MAX_ITEMS_IN_LIST
-
-    static function getCategory(ItemInShop itm) returns int
-        return itemToIndex.get(itm) div MAX_ITEMS_IN_LIST
 
     static function getItemFromList(int category, int index) returns ItemInShop
         if index < getItemCount(category)

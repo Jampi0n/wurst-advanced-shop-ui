@@ -403,9 +403,8 @@ public class ShopUI
                 appearance.itemListButtonSelect(index, true)
                 this.selectedRecipeButton = index
         else
-            let cat = ItemInShop.getCategory(newRecipe)
-            if cat == this.currentPage
-                let index = ItemInShop.getIndex(newRecipe)
+            let index = newRecipe.getIndex(this.currentPage)
+            if index != -1
                 appearance.itemListButtonSelect(index, true)
                 this.selectedRecipeButton = index
 

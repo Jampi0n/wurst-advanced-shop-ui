@@ -42,16 +42,15 @@ Runs when the sgop is closed by player p.
 /**
 Sort items within one category.
 **/
-@configurable public function shopConfig_sortItems(ItemInShop a, ItemInShop b) returns int
-    //return a.getSetupOrder() - b.getSetupOrder() sort by setup order
+@configurable public function shopConfig_sortItems(ItemInShop a, ItemInShop b, int _page) returns int
+    // return a.getSetupOrder(page) - b.getSetupOrder(page) // sort by setup order
     return a.getTotalCost() - b.getTotalCost() // sort by gold cost
 
 /**
 Sort items in the builds into list.
 **/
 @configurable public function shopConfig_sortBuildsInto(ItemInShop a, ItemInShop b) returns int
-    return shopConfig_sortItems(a,b)
-
+    return a.getTotalCost() - b.getTotalCost() // sort by gold cost
 /**
 Direct parents will always be earlier than transitive parents in the builds into list.
 (sorts direct parents and transitive parents individually and puts direct parents first)
