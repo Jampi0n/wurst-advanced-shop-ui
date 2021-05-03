@@ -6,8 +6,8 @@ import HashMap
 import HashList
 import ObjectIdGenerator
 import ItemObjEditing
-import public ShopConfig
-import public ShopFunctionConfig
+import ShopConfig
+import ShopFunctionConfig
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
@@ -94,6 +94,8 @@ public class ItemInShop
 
     private static int numPages = 0
     private static string array pageName
+    private static int staticSetupOrder = 0
+    private int setupOrder
 
     static function classInit()
         for i=0 to NUM_CATEGORIES-1
@@ -134,6 +136,8 @@ public class ItemInShop
         this.name = itm.getName()
         this.description = itm.getExtendedTooltip()
         itm.remove()
+        this.setupOrder = staticSetupOrder
+        staticSetupOrder++
 
     function addRequirement(ItemInShop requirement)
         this.requirements.add(requirement)
@@ -173,6 +177,9 @@ public class ItemInShop
 
     function isPowerUp() returns bool
         return this.powerUp
+
+    function getSetupOrder() returns int
+        return this.setupOrder
 
     function setEnablePageBreak(bool enable)
         this.enablePageBreak = enable
