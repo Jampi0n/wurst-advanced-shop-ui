@@ -8,8 +8,8 @@ import RecommendedItems
 import ErrorHandling
 import SoundUtils
 import ShopAPI
-import public ShopConfig
-import public ShopFunctionConfig
+import ShopConfig
+import ShopFunctionConfig
 import Execute
 import ShopAppearance
 

@@ -8,6 +8,8 @@ import FrameWrapperDefinitions
 import Assets
 import ClosureFrames
 import ErrorHandling
+import ShopConfig
+import ShopFunctionConfig
 
 constant MAX_RECIPE_TREE_LINKS = MAX_RECIPE_TREE_ICONS * 3
 
@@ -380,3 +382,5 @@ public class ShopAppearance
         branch.setPoint(FRAMEPOINT_BOTTOMRIGHT, recipeTreeBackground, FRAMEPOINT_TOP, toX, toY)
         branch.show()
     
+init
+    removeImportNotUsedWarning()

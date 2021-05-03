@@ -43,7 +43,7 @@ Runs when the sgop is closed by player p.
 Sort items within one category.
 **/
 @configurable public function shopConfig_sortItems(ItemInShop a, ItemInShop b) returns int
-    // return a castTo int - b castTo int // sort by setup order
+    //return a.getSetupOrder() - b.getSetupOrder() sort by setup order
     return a.getTotalCost() - b.getTotalCost() // sort by gold cost
 
 /**
@@ -57,3 +57,5 @@ Direct parents will always be earlier than transitive parents in the builds into
 (sorts direct parents and transitive parents individually and puts direct parents first)
 **/
 @configurable public constant PRIORITIZE_DIRECT_PARENTS = true
+
+public function removeImportNotUsedWarning()
