@@ -351,4 +351,5 @@ public class ItemInShop
         return pageName[index]
 
 init
+    removeImportNotUsedWarning()
     ItemInShop.classInit()

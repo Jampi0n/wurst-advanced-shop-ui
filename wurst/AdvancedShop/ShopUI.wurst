@@ -581,4 +581,5 @@ public class ShopUI
 
 
 init
+    removeImportNotUsedWarning()
     ShopUI.classInit()
