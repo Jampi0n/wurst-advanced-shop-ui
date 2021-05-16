@@ -16,7 +16,9 @@ Converts a string to an icon path.
 **/
 public function getIconPath(string icon) returns string
     string s = icon
-    if icon.length() < 20 or not icon.startsWith("ReplaceableTextures")
+    if icon.startsWith("\\") // for use with path-autocomplete
+        s = icon.substring(1)
+    if s.length() < 20 or not s.startsWith("ReplaceableTextures")
         s = "ReplaceableTextures\\CommandButtons\\" + s
     if not icon.endsWith(".blp")
         s += ".blp"
@@ -227,7 +229,8 @@ public class ItemInShop
 
                 sortingList.clear()
                 for ItemInShop b in itm.buildsIntoTransitively
-                    sortingList.add(b)
+                    if not itm.buildsIntoDirectly.has(b)
+                        sortingList.add(b)
 
                 sortingList.sortBuildsIntoList()
                 for ItemInShop b in sortingList
@@ -236,7 +239,8 @@ public class ItemInShop
                 for ItemInShop b in itm.buildsIntoDirectly
                     sortingList.add(b)
                 for ItemInShop b in itm.buildsIntoTransitively
-                    sortingList.add(b)
+                    if not sortingList.has(b)
+                        sortingList.add(b)
                 
                 sortingList.sortBuildsIntoList()
                 for ItemInShop b in sortingList
