@@ -12,6 +12,8 @@ public function setInfo(string name, string desc)
         currentItemDefinition.setTooltipBasic(name)
         currentItemDefinition.setDescription(desc)
         currentItemDefinition.setTooltipExtended(desc)
+    else
+        currentItemInShop.setInfo(name, desc)
 
 public function setInfo(string name)
     setInfo(name, currentDescription)

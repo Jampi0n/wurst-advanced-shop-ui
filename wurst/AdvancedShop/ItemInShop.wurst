@@ -126,6 +126,10 @@ public class ItemInShop
         this.buildsIntoCombined = new LinkedList<ItemInShop>
         allItems.add(this)
 
+    function setInfo(string name, string desc)
+        this.name = name
+        this.description = desc
+
     function setupItem(int category, int totalCost)
         this.totalCost = totalCost
         this.singleCost = -1
@@ -135,8 +139,7 @@ public class ItemInShop
             error("Too many items in category: " + CATEGORY_NAMES[category])
         let itm = createItem(itemId, vec2(0,0))
         this.icon = itm.getIconPath()
-        this.name = itm.getName()
-        this.description = itm.getExtendedTooltip()
+        setInfo(itm.getName(), itm.getExtendedTooltip())
         itm.remove()
         if not staticSetupOrderPerCategory.has(category)
             staticSetupOrderPerCategory.put(category, 0)
