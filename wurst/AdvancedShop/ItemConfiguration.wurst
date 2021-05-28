@@ -25,6 +25,10 @@ public function addRequirement(int itemId)
         let child = ItemInShop.retrieveItemFromId(itemId)
         currentItemInShop.addRequirement(child)
 
+public function addRequirements(vararg int itemIds)
+    for int itemId in itemIds
+        addRequirement(itemId)
+
 public function makePowerUp()
     if not compiletime
         currentItemInShop.makePowerUp()
