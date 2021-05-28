@@ -299,16 +299,15 @@ public class ShopAppearance
         ..setSize(itemDescWidth - 0.03, itemDescHeight - 0.02)
         ..setPoint(FRAMEPOINT_TOPLEFT, itemIcon.frame(), FRAMEPOINT_BOTTOMLEFT, 0, -0.005)
         ..setText("")
-        buyButton = tooltipBackground.addTextButton("Buy for: 0")
-        buyButton.frame()..setPoint(FRAMEPOINT_TOPRIGHT, tooltipBackground, FRAMEPOINT_TOPRIGHT, -0.01, -0.015)..onClick() ->
-            BlzGetTriggerFrame()..setEnabled(false)..setEnabled(true)
-            ShopUI.clickBuy(GetTriggerPlayer())
-        
         itemTitle = createFrame("TW_Shop_Title", tooltipBackground, 0, PermanentIndex.getNewIndex())
         ..setPoint(FRAMEPOINT_LEFT, this.itemIcon.frame(), FRAMEPOINT_RIGHT, 0.01, 0)
         ..setText("Gauntlets of Ogre Strength")
         ..setSize(recipeTreeWidth - 0.034, 0.03)
         ..setTextAlignment(TEXT_JUSTIFY_MIDDLE, TEXT_JUSTIFY_LEFT)
+        buyButton = tooltipBackground.addTextButton("Buy for: 0")
+        buyButton.frame()..setPoint(FRAMEPOINT_TOPRIGHT, tooltipBackground, FRAMEPOINT_TOPRIGHT, -0.01, -0.015)..onClick() ->
+            BlzGetTriggerFrame()..setEnabled(false)..setEnabled(true)
+            ShopUI.clickBuy(GetTriggerPlayer())
     function tooltipBackgroundvisible(bool flag)
         tooltipBackground.setVisible(flag)
 
