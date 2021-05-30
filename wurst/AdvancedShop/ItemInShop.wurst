@@ -8,6 +8,7 @@ import ObjectIdGenerator
 import ItemObjEditing
 import ShopConfig
 import ShopFunctionConfig
+import Execute
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
@@ -214,95 +215,98 @@ public class ItemInShop
     /** After all items have been created the buildsInto lists are built.**/
     static function finalize()
         configShopCategories()
-        for ItemInShop itm in allItems
-            itm.calculateGoldCost()
+        execute() -> 
+            for ItemInShop itm in allItems
+                itm.calculateGoldCost()
 
+            for ItemInShop itm in allItems
+                itm.calculateBuildsInto()
         for ItemInShop itm in allItems
-            itm.calculateBuildsInto()
-
-        for ItemInShop itm in allItems
-            let sortingList = new LinkedList<ItemInShop>()
-            if PRIORITIZE_DIRECT_PARENTS
-                for ItemInShop b in itm.buildsIntoDirectly
-                    sortingList.add(b)
-                
-                sortingList.sortBuildsIntoList()
-                for ItemInShop b in sortingList
-                    itm.buildsIntoCombined.add(b)
-
-                sortingList.clear()
-                for ItemInShop b in itm.buildsIntoTransitively
-                    if not itm.buildsIntoDirectly.has(b)
+            execute() -> 
+                let sortingList = new LinkedList<ItemInShop>()
+                if PRIORITIZE_DIRECT_PARENTS
+                    for ItemInShop b in itm.buildsIntoDirectly
                         sortingList.add(b)
+                    
+                    sortingList.sortBuildsIntoList()
+                    for ItemInShop b in sortingList
+                        itm.buildsIntoCombined.add(b)
 
-                sortingList.sortBuildsIntoList()
-                for ItemInShop b in sortingList
-                    itm.buildsIntoCombined.add(b)
-            else
-                for ItemInShop b in itm.buildsIntoDirectly
-                    sortingList.add(b)
-                for ItemInShop b in itm.buildsIntoTransitively
-                    if not sortingList.has(b)
+                    sortingList.clear()
+                    for ItemInShop b in itm.buildsIntoTransitively
+                        if not itm.buildsIntoDirectly.has(b)
+                            sortingList.add(b)
+
+                    sortingList.sortBuildsIntoList()
+                    for ItemInShop b in sortingList
+                        itm.buildsIntoCombined.add(b)
+                else
+                    for ItemInShop b in itm.buildsIntoDirectly
                         sortingList.add(b)
-                
-                sortingList.sortBuildsIntoList()
-                for ItemInShop b in sortingList
-                    itm.buildsIntoCombined.add(b)
+                    for ItemInShop b in itm.buildsIntoTransitively
+                        if not sortingList.has(b)
+                            sortingList.add(b)
+                    
+                    sortingList.sortBuildsIntoList()
+                    for ItemInShop b in sortingList
+                        itm.buildsIntoCombined.add(b)
 
-            destroy sortingList
+                destroy sortingList
 
 
         for i = 0 to NUM_CATEGORIES-1
-            itemsInCategory[i].sortItemList(i)
-
+            execute() -> 
+                itemsInCategory[i].sortItemList(i)
+    
         if AUTO_SPLIT_CATEGORIES
-            let categorySplitList = new LinkedList<LinkedList<LinkedList<ItemInShop>>>()
-            for i = 0 to NUM_CATEGORIES-1
-                let splitList = new LinkedList<LinkedList<ItemInShop>>()
-                while itemsInCategory[i].size() > MAX_ITEMS_IN_LIST
+            execute() -> 
+                let categorySplitList = new LinkedList<LinkedList<LinkedList<ItemInShop>>>()
+                for i = 0 to NUM_CATEGORIES-1
+                    let splitList = new LinkedList<LinkedList<ItemInShop>>()
+                    while itemsInCategory[i].size() > MAX_ITEMS_IN_LIST
+                        splitList.add(new LinkedList<ItemInShop>())
+                        let candidates = new LinkedList<ItemInShop>()
+                        for j = 0 to min(MAX_ITEMS_IN_LIST, itemsInCategory[i].size()) - 1
+                            candidates.add(itemsInCategory[i].removeAt(0))
+                        while not candidates.peek().enablePageBreak
+                            itemsInCategory[i].addtoStart(candidates.pop())
+                        splitList.get(splitList.size()-1).addAll(candidates)
+                        destroy candidates
                     splitList.add(new LinkedList<ItemInShop>())
-                    let candidates = new LinkedList<ItemInShop>()
-                    for j = 0 to min(MAX_ITEMS_IN_LIST, itemsInCategory[i].size()) - 1
-                        candidates.add(itemsInCategory[i].removeAt(0))
-                    while not candidates.peek().enablePageBreak
-                        itemsInCategory[i].addtoStart(candidates.pop())
-                    splitList.get(splitList.size()-1).addAll(candidates)
-                    destroy candidates
-                splitList.add(new LinkedList<ItemInShop>())
-                for j = 0 to itemsInCategory[i].size() - 1
-                    splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
-                categorySplitList.add(splitList)
-            int k = 0
-            for category in categorySplitList
-                for _ in category
-                    if k >= NUM_CATEGORIES
-                        itemsInCategory[k] = new LinkedList<ItemInShop>()
-                    else
-                        itemsInCategory[k].clear()
-                    k++
-            numPages = k
-            k = 0
-            var categoryIndex = 0
-            for category in categorySplitList
-                if category.size() > 1
-                    var splitPageIndex = 1
-                    for splitPage in category
-                        pageName[k] = CATEGORY_NAMES[categoryIndex] + "(" + splitPageIndex.toString() + "/" + category.size().toString() + ")"
-                        itemsInCategory[k].addAll(splitPage)
+                    for j = 0 to itemsInCategory[i].size() - 1
+                        splitList.get(splitList.size()-1).add(itemsInCategory[i].removeAt(0))
+                    categorySplitList.add(splitList)
+                int k = 0
+                for category in categorySplitList
+                    for _ in category
+                        if k >= NUM_CATEGORIES
+                            itemsInCategory[k] = new LinkedList<ItemInShop>()
+                        else
+                            itemsInCategory[k].clear()
                         k++
-                        splitPageIndex++
-                else
-                    pageName[k] = CATEGORY_NAMES[categoryIndex]
-                    itemsInCategory[k].addAll(category.getFirst())
-                    k++
-                categoryIndex++
+                numPages = k
+                k = 0
+                var categoryIndex = 0
+                for category in categorySplitList
+                    if category.size() > 1
+                        var splitPageIndex = 1
+                        for splitPage in category
+                            pageName[k] = CATEGORY_NAMES[categoryIndex] + "(" + splitPageIndex.toString() + "/" + category.size().toString() + ")"
+                            itemsInCategory[k].addAll(splitPage)
+                            k++
+                            splitPageIndex++
+                    else
+                        pageName[k] = CATEGORY_NAMES[categoryIndex]
+                        itemsInCategory[k].addAll(category.getFirst())
+                        k++
+                    categoryIndex++
 
-            for category in categorySplitList
-                while not category.isEmpty()
-                    destroy category.pop()
-            while not categorySplitList .isEmpty()
-                destroy categorySplitList.pop()
-            destroy categorySplitList
+                for category in categorySplitList
+                    while not category.isEmpty()
+                        destroy category.pop()
+                while not categorySplitList .isEmpty()
+                    destroy categorySplitList.pop()
+                destroy categorySplitList
 
 
         for i = 0 to numPages-1
@@ -358,5 +362,4 @@ public class ItemInShop
         return pageName[index]
 
 init
-    removeImportNotUsedWarning()
     ItemInShop.classInit()

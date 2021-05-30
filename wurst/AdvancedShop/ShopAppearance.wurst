@@ -9,7 +9,6 @@ import Assets
 import ClosureFrames
 import ErrorHandling
 import ShopConfig
-import ShopFunctionConfig
 
 constant MAX_RECIPE_TREE_LINKS = MAX_RECIPE_TREE_ICONS * 3
 
@@ -382,4 +381,3 @@ public class ShopAppearance
         branch.show()
     
 init
-    removeImportNotUsedWarning()

@@ -56,5 +56,3 @@ Direct parents will always be earlier than transitive parents in the builds into
 (sorts direct parents and transitive parents individually and puts direct parents first)
 **/
 @configurable public constant PRIORITIZE_DIRECT_PARENTS = true
-
-public function removeImportNotUsedWarning()
