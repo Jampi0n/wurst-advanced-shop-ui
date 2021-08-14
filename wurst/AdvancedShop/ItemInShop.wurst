@@ -73,18 +73,18 @@ public class ItemInShop
     private int totalCost = -1
     private int singleCost = -1
     private bool powerUp = false
-    private LinkedList<ItemInShop> requirements
+    private constant requirements = new LinkedList<ItemInShop>
     private int recipeSize = 1
     private int visibleRecipeSize = 1
     private bool buildsIntoStarted = false
     private bool enablePageBreak = true
 
-    private HashMap<int,int> indexPerCategory = new HashMap<int,int>
-    private HashMap<int,int> setupOrderPerCategory = new HashMap<int,int>
-    private LinkedList<int> categories = new LinkedList<int>
-    private HashList<ItemInShop> buildsIntoDirectly
-    private HashList<ItemInShop> buildsIntoTransitively
-    private LinkedList<ItemInShop> buildsIntoCombined
+    private constant indexPerCategory = new HashMap<int,int>
+    private constant setupOrderPerCategory = new HashMap<int,int>
+    private constant categories = new LinkedList<int>
+    private constant buildsIntoDirectly = new HashList<ItemInShop>
+    private constant buildsIntoTransitively = new HashList<ItemInShop>
+    private constant buildsIntoCombined = new LinkedList<ItemInShop>
     private static constant allItems = new LinkedList<ItemInShop>
 
     private string name = ""
@@ -121,10 +121,6 @@ public class ItemInShop
     construct(int itemId)
         this.itemId = itemId
         itemIdToItemInShop.put(itemId, this)
-        this.requirements = new LinkedList<ItemInShop>
-        this.buildsIntoDirectly = new HashList<ItemInShop>
-        this.buildsIntoTransitively = new HashList<ItemInShop>
-        this.buildsIntoCombined = new LinkedList<ItemInShop>
         allItems.add(this)
 
     function setInfo(string name, string desc)
@@ -132,6 +128,10 @@ public class ItemInShop
         this.description = desc
 
     function setupItem(int category, int totalCost)
+        if category >= NUM_CATEGORIES or category < 0
+            error("Not a valid category: " + category.toString())
+        if category == RECOMMENDED_CATEGORY
+            error("Cannot add items to recommended!")
         this.totalCost = totalCost
         this.singleCost = -1
         this.categories.add(category)
