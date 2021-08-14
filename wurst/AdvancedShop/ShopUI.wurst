@@ -347,6 +347,8 @@ public class ShopUI
     @inline
     private function loadItemListButton(int i)
         let itm = this.getItemFromList(this.currentPage, i)
+        if itm == null
+            error("Could not load item: (" + this.currentPage.toString() + "," + i.toString() + ")")
         if itm == this.selectedRecipe
             this.selectedRecipeButton = i
             appearance.itemListButtonVisible(i, true)
