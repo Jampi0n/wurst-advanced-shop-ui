@@ -35,7 +35,7 @@ Common use case is hiding other UI parts like multiboards or timers.
 **/
 @configurable public function shopConfig_onOpenShop(player _p)
 /**
-Runs when the sgop is closed by player p.
+Runs when the shop is closed by player p.
 **/
 @configurable public function shopConfig_onCloseShop(player _p)
 

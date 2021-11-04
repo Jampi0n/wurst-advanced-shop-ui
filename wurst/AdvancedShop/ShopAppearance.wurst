@@ -246,7 +246,7 @@ public class ShopAppearance
             for child in childIndexList
                 let parentLink = getBranch(child * 3)
                 let childX = getRecipeTreeButtonPos(child).x
-                let childY = getRecipeTreeButtonPos(child).y
+                let childY = getRecipeTreeButtonPos(child).y - 0.0005 // small visual adjustment
                 modifyBranch(parentLink, childX - branchWidth, centerY, childX + branchWidth, childY)
                 parentLink.show()
         else

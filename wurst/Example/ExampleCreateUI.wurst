@@ -5,19 +5,32 @@ import ShopUI
 import ClosureTimers
 import UnitIds
 import RecommendedItems
+import ShopAppearance
 
 unit array playerHeroes
 ShopUI array playerShopUI
 
+
+// This custom shop has a smaller item list height
+class CustomShop extends ShopAppearance
+    construct()
+        super()
+        itemListHeight = recipeTreeHeight
+
+
+// Returns a random human hero
 function getHeroId(int _playerId) returns int
     let heroIds = [UnitIds.archmage, UnitIds.paladin, UnitIds.mountainking, UnitIds.bloodmage]
     return heroIds[GetRandomInt(0, 3)]
 
 init
+    // configure recommended items for human heroes
+    // The unit type id is a natural choice for the hero identifier
     let amItems = new RecommendedItems(UnitIds.archmage)
     let palItems = new RecommendedItems(UnitIds.paladin)
     let mkItems = new RecommendedItems(UnitIds.mountainking)
     let blmItems = new RecommendedItems(UnitIds.bloodmage)
+    // The following items are defined in ExampleItems.wurst
     amItems.addItems(ITEM_ID_INT6, ITEM_ID_ALL5)
     palItems.addItems(ITEM_ID_STR6, ITEM_ID_ALL5)
     mkItems.addItems(ITEM_ID_STR6, ITEM_ID_ALL5)
@@ -27,24 +40,32 @@ init
     mkItems.addItems(ITEM_ID_STR6_EXISTING, ITEM_ID_ALL5_EXISTING)
     blmItems.addItems(ITEM_ID_INT6_EXISTING, ITEM_ID_ALL5_EXISTING)
 
+    // create a shop for every player and use Escape as a button to open and close the shop
     for i = 0 to bj_MAX_PLAYERS - 1
-        playerShopUI[i] = new ShopUI(players[i], null)
+        playerShopUI[i] = new ShopUI(players[i], null, new CustomShop())
         CreateTrigger()
         ..registerPlayerKeyPress(players[i], OSKEY_ESCAPE, OSKEY_META.NONE, true)
         ..addAction() ->
             let id = GetTriggerPlayer().getId()
-            if playerShopUI[id].isEnabled()
+            if playerShopUI[id].isCurrentlyOpen()
                 playerShopUI[id].closeShop()
-                if GetLocalPlayer().getId() == id
-                    ClearSelection()
-                    SelectUnit(playerHeroes[id],true)
-
             else
                 playerShopUI[id].openShop()
 
-    doAfter(3) -> 
+    doAfter(0) -> 
         for i = 0 to bj_MAX_PLAYERS - 1
             if players[i].getSlotState() == PLAYER_SLOT_STATE_PLAYING
+                // Example setup: give gold and create hero
                 players[i].setGold(1000)
                 playerHeroes[i] = createUnit(players[i], getHeroId(i), players[i].getStartLocation(), angle(0))
-                playerShopUI[i].start(playerHeroes[i])
+                // Configure Shop
+                playerShopUI[i]
+                // The unit who buys the items (required)
+                ..setInventoryUnit(playerHeroes[i])
+                // The recommended items to show (optional)
+                ..setRecommended(playerHeroes[i].getTypeId())
+                // Initially selected items (required)
+                // you can also use selectFirst if you do not use recommended items or manually call selectRecipe(...) and setPage(...)
+                ..selectFirstRecommended()
+                // After all configuration is done, the player is allowed to open the shop
+                ..setCanBeOpened(true)

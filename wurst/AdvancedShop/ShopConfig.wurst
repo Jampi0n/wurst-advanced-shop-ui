@@ -14,11 +14,6 @@ public string array CATEGORY_NAMES
 
 @configurable public constant VISIBLE_RECIPE_TREE_HEIGHT = 3
 
-// category and item selected initially when the hero opens the shop for the first time
-// this item must exist for this hero
-@configurable public constant STARTING_CATEGORY = 0
-@configurable public constant STARTING_ITEM = 0
-
 // automatically splits categories into multiple pages, if number of items exceeds MAX_ITEMS_IN_LIST
 @configurable public constant AUTO_SPLIT_CATEGORIES = true
 

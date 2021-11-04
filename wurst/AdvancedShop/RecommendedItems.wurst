@@ -2,56 +2,62 @@ package RecommendedItems
 
 import HashMap
 import ItemInShop
-import ErrorHandling
 import LinkedList
+import HashList
 
-constant MAX_RECOMMENDED_ITEMS = 6
+/*
+RecommendedItems uses a unique integer identifier for every set of recommended items.
+The unit type id can be used, but it's also possible to use other identifiers.
+For instance if an object exists for every hero type, this object can be used.
+This is beneficial, because it can be more robust with unit morphs.
+*/
 
 public class RecommendedItems
 
-    private ItemInShop array[MAX_RECOMMENDED_ITEMS] recommended
-    private int unitId
+    private constant recommended = new HashList<int>
+    private int heroIdentifier
     private static constant unitToRecommended = new HashMap<int, RecommendedItems>
-    private constant itemToIndex = new HashMap<ItemInShop,int>
+    private constant itemToIndex = new HashMap<int,int>
     private int count = 0
 
-    construct(int unitId)
-        this.unitId = unitId
-        unitToRecommended.put(this.unitId, this)
+    construct(int heroIdentifier)
+        this.heroIdentifier = heroIdentifier
+        unitToRecommended.put(this.heroIdentifier, this)
 
     function addItem(int itemId)
-        if this.count >= MAX_RECOMMENDED_ITEMS
-            error("Only " + MAX_RECOMMENDED_ITEMS.toString() + " items can be recommended!")
-        else
-            this.recommended[this.count] = ItemInShop.getItemFromId(itemId)
-            itemToIndex.put(this.recommended[this.count], this.count)
-            this.count++
+        this.recommended.add(itemId)
+
+        itemToIndex.put(itemId, this.count)
+        this.count++
 
     function addItems(vararg int itemIds)
         for i in itemIds
             this.addItem(i)
+
     function addList(LinkedList<int> list)
         for i in list
             this.addItem(i)
 
-    static function getCount(int unitId) returns int
-        if unitToRecommended.has(unitId)
-            return unitToRecommended.get(unitId).count
+    static function getCount(int heroIdentifier) returns int
+        if unitToRecommended.has(heroIdentifier)
+            return unitToRecommended.get(heroIdentifier).count
         else
             return 0
 
-    static function getIndex(int unitId, ItemInShop itm) returns int
-        if unitToRecommended.has(unitId)
-            let rec = unitToRecommended.get(unitId)
+    static function getIndex(int heroIdentifier, ItemInShop itm) returns int
+        return getIndex(heroIdentifier, itm.getItemId())
+
+    static function getIndex(int heroIdentifier, int itm) returns int
+        if unitToRecommended.has(heroIdentifier)
+            let rec = unitToRecommended.get(heroIdentifier)
             if rec.itemToIndex.has(itm)
                 return rec.itemToIndex.get(itm)
             
         return -1
 
-    static function getItem(int unitId, int index) returns ItemInShop
-        let rec = unitToRecommended.get(unitId)
+    static function getItem(int heroIdentifier, int index) returns ItemInShop
+        let rec = unitToRecommended.get(heroIdentifier)
         if rec != null
-            return rec.recommended[index]
+            return ItemInShop.getItemFromId(rec.recommended.get(index))
         else
             return null
-            

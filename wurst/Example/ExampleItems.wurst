@@ -130,6 +130,7 @@ function initItemsExisting()
     addRequirement(ITEM_ID_CLAW9)
     setupItem(ITEM_ID_CLAW15, 4, 800)
     addRequirement(ITEM_ID_CLAW12)
+    setupItem(ITEM_ID_CLAW15, 3, 800)
     
 init
     initItems()

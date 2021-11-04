@@ -181,16 +181,16 @@ class RecipeTreeNode
 public class ShopUI
     private player forPlayer
     private unit inventoryUnit
-    private bool enabled = false //is the ShopUI open?
-    private bool enableOpen = false //can the ShopUI be opened?
+    private bool open = false //is the ShopUI open?
+    private bool canOpen = false //can the ShopUI be opened?
     private int selectedRecipeButton = -1
     protected ItemInShop selectedRecipe
     private int itemsInRecipe
     protected ItemInShop selectedItem
     private int itemsInBuildsInto
-    private int currentPage
+    private int currentPage = -1
     private int itemsOnPage
-    private int inventoryUnitTypeId
+    private int heroIdentifier
 
 
     protected static ShopUI array playerUIs
@@ -224,15 +224,12 @@ public class ShopUI
         appearance.shopBackgroundvisible(false)
 
         this.setInventoryUnit(inventoryUnit)
-        this.inventoryUnitTypeId = this.inventoryUnit.getTypeId()
-        if RECOMMENDED_CATEGORY != 0
-            this.selectedItem = this.getItemFromList(0,0)
-        else
-            this.selectedItem = this.getItemFromList(1,0)
-        this.selectedRecipe = this.selectedItem
+        this.heroIdentifier = 0
+        this.selectedItem = null
+        this.selectedRecipe = null
+        this.selectFirst()
 
         this.forPlayer = whichPlayer
-        this.currentPage = -1
         this.itemsOnPage = 0
         this.itemsInBuildsInto = 0
         this.itemsInRecipe = 0
@@ -242,13 +239,6 @@ public class ShopUI
         //this.buttonMap = new HashMap<int,Button>()
 
         this.updateTimer = getTimer()..setData(this.playerIndex)
-
-        if RECOMMENDED_CATEGORY != 0
-            setPage(0)
-        else
-            setPage(1)
-        this.selectRecipe(this.selectedItem, true)
-        this.selectItem(this.selectedItem, true)
 
         onItemAcquire.registerPlayerUnitEvent(this.forPlayer, EVENT_PLAYER_UNIT_PICKUP_ITEM, null)
         onItemLose.registerPlayerUnitEvent(this.forPlayer, EVENT_PLAYER_UNIT_DROP_ITEM, null)
@@ -295,7 +285,7 @@ public class ShopUI
         return recipeTreeItem[(this castTo int) * MAX_RECIPE_TREE_ICONS + index]
     
     @inline        
-    function setRecipeTreeItem(int index, ItemInShop fw) returns ItemInShop
+    protected function setRecipeTreeItem(int index, ItemInShop fw) returns ItemInShop
         recipeTreeItem[(this castTo int) * MAX_RECIPE_TREE_ICONS + index] = fw
         return fw
 
@@ -309,10 +299,10 @@ public class ShopUI
         return fw
         
     function openShop()
-        if this.enabled or not this.enableOpen 
+        if this.open or not this.canOpen 
             return
 
-        this.enabled = true
+        this.open = true
         this.refreshRecipeTree()
         this.updateItemCost()
         this.updateBuyButton(true)
@@ -330,10 +320,10 @@ public class ShopUI
 
 
     function closeShop()
-        if not this.enabled
+        if not this.open
             return
 
-        this.enabled = false
+        this.open = false
         this.updateTimer.pause()
 
         if GetLocalPlayer() == this.forPlayer
@@ -390,7 +380,7 @@ public class ShopUI
 
         this.selectedRecipe = newRecipe
 
-        selectItem(newRecipe, false)
+        selectItem(newRecipe, forceRefresh)
 
 
         //if one uses builds into, the selected Item remains the same, but recipe changes
@@ -400,7 +390,7 @@ public class ShopUI
         loadRecipeTree()
 
         if this.currentPage == RECOMMENDED_CATEGORY
-            let index = RecommendedItems.getIndex(this.inventoryUnitTypeId, newRecipe)
+            let index = RecommendedItems.getIndex(this.heroIdentifier, newRecipe)
             if index != -1
                 appearance.itemListButtonSelect(index, true)
                 this.selectedRecipeButton = index
@@ -450,7 +440,12 @@ public class ShopUI
         return ItemInShop.getPageName(index)
 
     function setPage(int newPage)
-        if newPage == this.currentPage
+        this.setPage(newPage, false)
+
+    function setPage(int newPage, bool forceUpdate)
+        if newPage == -1
+            return
+        if newPage == this.currentPage and not forceUpdate
             return
 
         if currentPage != -1
@@ -490,44 +485,92 @@ public class ShopUI
     function getPlayer() returns player
         return this.forPlayer
 
+    /**
+    Returns the inventory unit. This is the unit whose inventory will be used to check for existing items and to which bought items will be added.
+    **/
     function getInventoryUnit() returns unit
         return this.inventoryUnit
 
+    /**
+    Sets the inventory unit. This is the unit whose inventory will be used to check for existing items and to which bought items will be added.
+    Recommended items are separate from the inventory unit and must be changed with setRecommended().
+    **/
     function setInventoryUnit(unit inventoryUnit)
         this.inventoryUnit = inventoryUnit
-        if inventoryUnit != null
 
+    /**
+    Returns the item with index in category.
+    **/
     function getItemFromList(int category, int index) returns ItemInShop
         if category == RECOMMENDED_CATEGORY
-            if index < RecommendedItems.getCount(this.inventoryUnitTypeId)
-                return RecommendedItems.getItem(this.inventoryUnitTypeId, index)
-            else
-                return null
+            let count = RecommendedItems.getCount(this.heroIdentifier)
+            if index >= count
+                error("Tried to access recommended item at index " + index.toString() + ", but only " + count.toString() + " recommended items exist for identifier " + this.heroIdentifier.toString() )
+            return RecommendedItems.getItem(this.heroIdentifier, index)
         else
             return ItemInShop.getItemFromList(category, index)
     
+    /**
+    Returns the number of items in the category.
+    **/
     function getItemCount(int category) returns int
         if category == RECOMMENDED_CATEGORY
-            return RecommendedItems.getCount(this.inventoryUnitTypeId)
+            return RecommendedItems.getCount(this.heroIdentifier)
         else
             return ItemInShop.getItemCount(category)
 
-    private function selectFirst()
-        let itm = getItemFromList(STARTING_CATEGORY,STARTING_ITEM)
-        if itm == null
-            return
-        else
-            this.selectRecipe(itm, true)
-            this.setPage(STARTING_CATEGORY)
 
+    /**
+    Sets the recommended items identifier and refreshes the recommended items page.
+    **/
+    function setRecommended(int heroIdentifier)
+        this.heroIdentifier = heroIdentifier
+        this.setPage(this.getPage(), true)
+
+    /**
+    Returns the recommended items identifier.
+    **/
+    function getRecommended() returns int
+        return this.heroIdentifier
+
+
+    /**
+    Initializes the shop and allows opening it.
+    For more control, use functions individually.
+    **/
+    @deprecated
     function start(unit heroUnit)
         this.setInventoryUnit(heroUnit)
-        this.inventoryUnitTypeId = heroUnit.getTypeId()
+        this.heroIdentifier = heroUnit.getTypeId()
         this.selectFirst()
-        this.enableOpen = true
+        this.setCanBeOpened(true)
 
+    @deprecated("use isCurrentlyOpen")
     function isEnabled() returns bool
-        return this.enabled
+        return isCurrentlyOpen()
+
+    function isCurrentlyOpen() returns bool
+        return this.open
+
+    function getCanBeOpened() returns bool
+        return this.canOpen
+
+    function setCanBeOpened(bool flag)
+        this.canOpen = flag
+
+    function selectFirst()
+        for i = 0 to NUM_CATEGORIES -1
+            if this.getItemCount(i) != 0
+                this.selectRecipe(this.getItemFromList(i, 0), true)
+                this.setPage(ItemInShop.getFirstPage(i), true)
+                return
+        error("Could not select any item!")
+
+    function selectFirstRecommended()
+        if this.getItemCount(RECOMMENDED_CATEGORY) == 0
+            error("Has no recommended items: " + this.heroIdentifier.toString())
+        this.selectRecipe(this.getItemFromList(RECOMMENDED_CATEGORY, 0), true)
+        this.setPage(ItemInShop.getFirstPage(RECOMMENDED_CATEGORY), true)
 
     function getAppearance() returns ShopAppearance
         return this.appearance
@@ -537,7 +580,7 @@ public class ShopUI
         SOUND_CLICK.playForPlayer(this.forPlayer).snd.setVolume(125)
 
     private function onItemGet(item _itm)
-        if this.enabled
+        if this.open
             doAfter(0) ->
                 this.refreshRecipeTree()
                 this.updateItemCost()
@@ -549,7 +592,7 @@ public class ShopUI
             shopUI.onItemGet(GetManipulatedItem())
 
     private function onItemDrop(item _itm)
-        if this.enabled
+        if this.open
             doAfter(0) ->
                 this.refreshRecipeTree()
                 this.updateItemCost()

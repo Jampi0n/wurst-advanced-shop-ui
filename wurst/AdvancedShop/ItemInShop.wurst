@@ -9,6 +9,7 @@ import ItemObjEditing
 import ShopConfig
 import ShopFunctionConfig
 import Execute
+import ObjectIds
 
 constant ITEM_DEFINITIONS = new HashMap<int, ItemDefinition>
 
@@ -79,6 +80,8 @@ public class ItemInShop
     private bool buildsIntoStarted = false
     private bool enablePageBreak = true
 
+    private static constant pageToCategory = new HashMap<int,int>
+    private static constant categoryToFirstPage = new HashMap<int,int>
     private constant indexPerCategory = new HashMap<int,int>
     private constant setupOrderPerCategory = new HashMap<int,int>
     private constant categories = new LinkedList<int>
@@ -291,11 +294,16 @@ public class ItemInShop
                     if category.size() > 1
                         var splitPageIndex = 1
                         for splitPage in category
+                            pageToCategory.put(k, categoryIndex)
+                            if splitPageIndex == 1
+                                categoryToFirstPage.put(categoryIndex, k)
                             pageName[k] = CATEGORY_NAMES[categoryIndex] + "(" + splitPageIndex.toString() + "/" + category.size().toString() + ")"
                             itemsInCategory[k].addAll(splitPage)
                             k++
                             splitPageIndex++
                     else
+                        pageToCategory.put(k, categoryIndex)
+                        categoryToFirstPage.put(categoryIndex, k)
                         pageName[k] = CATEGORY_NAMES[categoryIndex]
                         itemsInCategory[k].addAll(category.getFirst())
                         k++
@@ -338,10 +346,9 @@ public class ItemInShop
             child.addBuildsIntoTransitively(into, depth + 1)
 
     static function getItemFromList(int category, int index) returns ItemInShop
-        if index < getItemCount(category)
-            return itemsInCategoryArray[category * MAX_ITEMS_IN_LIST + index]
-        else
-            return null
+        if index >= getItemCount(category)
+            error("IndexError: (" + category.toString() + "," + index.toString() + ")")
+        return itemsInCategoryArray[category * MAX_ITEMS_IN_LIST + index]
 
     static function getItemCount(int category) returns int
         return itemsPerCategory[category]
@@ -350,16 +357,21 @@ public class ItemInShop
         return itemsInCategory[category]
 
     static function getItemFromId(int itemId) returns ItemInShop
-        if itemIdToItemInShop.has(itemId)
-            return itemIdToItemInShop.get(itemId)
-        else
-            return null
+        if not itemIdToItemInShop.has(itemId)
+            error("Cannot get item from itemId " + itemId.toRawCode())
+        return itemIdToItemInShop.get(itemId)
 
     static function getNumPages() returns int
         return numPages
 
     static function getPageName(int index) returns string
         return pageName[index]
+
+    static function getFirstPage(int category) returns int
+        return categoryToFirstPage.get(category)
+
+    static function getCategory(int page) returns int
+        return pageToCategory.get(page)
 
 init
     ItemInShop.classInit()

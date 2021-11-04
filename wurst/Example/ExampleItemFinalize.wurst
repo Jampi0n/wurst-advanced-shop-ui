@@ -4,11 +4,10 @@ import ItemInShop
 import public ExampleItems
 
 /*
-This file finalizes all items. It must therefore run after all item definitions.
-Simply import all your item definition packages.
-Use public import to avoid warnings.
-If you use items, instead of importing the item definitions, import this package.
-This ensures you only use finalized item Ids
+After all items are defined, you need to call ItemInShop.finalize() for some postprocessing.
+Only after that, it is save to use the item ids.
+It is recommended to publicly import all item definitions in a specific file like this and call ItemInShop.finalize() in the init block.
+You can then import this file whenever you want to use item ids and can be sure that the item ids are save to use.
 */
 
 init
