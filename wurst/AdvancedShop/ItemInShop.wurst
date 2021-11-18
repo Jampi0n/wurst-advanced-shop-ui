@@ -69,6 +69,7 @@ function LinkedList<ItemInShop>.sortBuildsIntoList()
 
 public class ItemInShop
 
+    private static bool startFinalizing = false
     private int itemId
     private string icon = ""
     private int totalCost = -1
@@ -163,6 +164,12 @@ public class ItemInShop
     function getIcon() returns string
         return this.icon
         
+    function setTotalCost(int newValue)
+        if startFinalizing
+            error("Items already started finalizing. Can no longer change item costs.")
+        else
+            this.totalCost = newValue
+
     function getTotalCost() returns int
         return this.totalCost
 
@@ -217,6 +224,7 @@ public class ItemInShop
 
     /** After all items have been created the buildsInto lists are built.**/
     static function finalize()
+        startFinalizing = true
         configShopCategories()
         execute() -> 
             for ItemInShop itm in allItems
